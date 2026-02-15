@@ -34,6 +34,9 @@ type ExecuteActionMsg struct {
 	ActionID string
 }
 
+// RefreshTerminalsMsg mensaje para refrescar los terminales detectados
+type RefreshTerminalsMsg struct{}
+
 // ============================================
 // Funciones de gradiente
 // ============================================
@@ -114,14 +117,15 @@ type MenuLevel struct {
 
 // Modelo del menú
 type MenuModel struct {
-	History     []MenuLevel
-	CurrentMenu string
-	Selected    int
-	Quitting    bool
-	Version     string
-	Platform    string
-	Width       int
-	Height      int
+	History         []MenuLevel
+	CurrentMenu     string
+	Selected        int
+	Quitting        bool
+	Version         string
+	Platform        string
+	Width           int
+	Height          int
+	CachedTerminals []os.Terminal // Cache de terminales detectados
 }
 
 // NewMenuModel crea un nuevo modelo de menú
@@ -131,11 +135,12 @@ func NewMenuModel(version string) MenuModel {
 	}
 
 	m := MenuModel{
-		History:     []MenuLevel{},
-		CurrentMenu: "main",
-		Selected:    0,
-		Version:     version,
-		Platform:    getPlatformInfo(),
+		History:         []MenuLevel{},
+		CurrentMenu:     "main",
+		Selected:        0,
+		Version:         version,
+		Platform:        getPlatformInfo(),
+		CachedTerminals: os.DetectTerminals(), // Cache inicial
 	}
 
 	m.loadMainMenu()
@@ -231,7 +236,7 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "down", "j":
 			if m.CurrentMenu == "terminal" {
-				terminals := os.DetectTerminals()
+				terminals := m.CachedTerminals
 				maxOptions := len(terminals) + 2
 				if m.Selected < maxOptions-1 {
 					m.Selected++
@@ -280,6 +285,9 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case ExecuteActionMsg:
 		executeMenuAction(msg.ActionID)
+
+	case RefreshTerminalsMsg:
+		m.CachedTerminals = os.DetectTerminals()
 	}
 	return m, nil
 }
@@ -288,7 +296,7 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
 	// Si estamos en el menú de terminal
 	if m.CurrentMenu == "terminal" {
-		terminals := os.DetectTerminals()
+		terminals := m.CachedTerminals
 		terminalCount := len(terminals)
 
 		// Si Selected es un índice de terminal (0 a terminalCount-1)
@@ -332,11 +340,13 @@ func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
 
 		// Selected == terminalCount → Actualizar
 		if m.Selected == terminalCount {
+			// Refrescar cache y mostrar mensaje
 			return *m, func() tea.Msg {
+				m.CachedTerminals = os.DetectTerminals()
 				showTerminalsTable()
 				fmt.Println()
-				fmt.Println(SuccessStyle.Render("🔄 Terminales actualizados"))
-				return nil
+				fmt.Println(SuccessStyle.Render("Terminales actualizados"))
+				return RefreshTerminalsMsg{}
 			}
 		}
 
@@ -488,15 +498,15 @@ func (m MenuModel) View() string {
 
 	// Si es el menú de terminal, mostrar tabla directamente
 	if m.CurrentMenu == "terminal" {
-		terminals := os.DetectTerminals()
+		terminals := m.CachedTerminals
 
-		content += titleStyle.Render("📋 Terminales Detectados") + "\n"
+		content += titleStyle.Render("Terminales Detectados") + "\n"
 		content += "\n"
 
 		// Encabezados de la tabla
-		content += fmt.Sprintf("  %-20s │ %-10s │ %-12s\n",
+		content += fmt.Sprintf("  %-22s │ %-10s │ %s\n",
 			"Terminal", "Detectado", "Configurado")
-		content += "  " + strings.Repeat("─", 52) + "\n"
+		content += "  " + strings.Repeat("─", 50) + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
 		maxVisible := 6
@@ -539,28 +549,27 @@ func (m MenuModel) View() string {
 
 			// Si está seleccionado
 			if m.Selected == i {
-				content += optionSelectedStyle.Render(fmt.Sprintf("► %s %-17s │ %-10s │ %-12s\n", t.Icon, t.Name, detected, configured))
+				content += optionSelectedStyle.Render(fmt.Sprintf("► %s %-20s │ %-10s │ %s\n", t.Icon, t.Name, detected, configured))
 			} else {
-				content += optionUnselectedStyle.Width(contentWidth).Render(fmt.Sprintf("  %s %-17s │ %-10s │ %-12s\n", t.Icon, t.Name, detected, configured))
+				content += optionUnselectedStyle.Width(contentWidth).Render(fmt.Sprintf("  %s %-20s │ %-10s │ %s\n", t.Icon, t.Name, detected, configured))
 			}
 		}
 
 		content += "\n"
 
 		// Botones de acción al final
-		content += titleStyle.Render("Acciones") + "\n"
-		content += "\n"
+		content += "\n" + titleStyle.Render("Acciones") + "\n"
 
 		actionIdx := terminalOptionsCount // Índice del primer botón
 
 		if m.Selected == actionIdx {
-			content += actionStyle.Render("► 🔄 Actualizar") + "\n"
+			content += actionStyle.Render("► Actualizar") + "\n"
 		} else {
-			content += actionStyle.Width(contentWidth).Render("  🔄 Actualizar") + "\n"
+			content += actionStyle.Width(contentWidth).Render("  Actualizar") + "\n"
 		}
 
 		if m.Selected == actionIdx+1 {
-			content += backStyle.Render("► ← Volver") + "\n"
+			content += backStyle.Render("► Volver") + "\n"
 		} else {
 			content += backStyle.Width(contentWidth).Render("  ← Volver") + "\n"
 		}
