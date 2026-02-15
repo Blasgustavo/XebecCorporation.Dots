@@ -10,11 +10,14 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/XebecCorporation/XebecCorporation.Dots/internal/os"
 )
 
 // Opción del menú
 type MenuOption struct {
 	ID          string
+	Icon        string
 	Title       string
 	Description string
 	Action      func() error
@@ -22,17 +25,22 @@ type MenuOption struct {
 
 // Modelo del menú
 type MenuModel struct {
-	Options     []MenuOption
-	Selected    int
-	Quitting    bool
-	Version     string
-	Platform    string
-	Width       int
-	Height      int
+	Options  []MenuOption
+	Selected int
+	Quitting bool
+	Version  string
+	Platform string
+	Width    int
+	Height   int
 }
 
 // Inicializar el modelo
 func NewMenuModel(version string) MenuModel {
+	// Si no se proporciona versión, usar la del branding
+	if version == "" {
+		version = GetVersion()
+	}
+
 	return MenuModel{
 		Options:  getMainMenuOptions(),
 		Selected: 0,
@@ -41,45 +49,21 @@ func NewMenuModel(version string) MenuModel {
 	}
 }
 
-// Obtener opciones del menú principal
+// Obtener opciones del menú principal desde branding
 func getMainMenuOptions() []MenuOption {
-	return []MenuOption{
-		{
-			ID:          "terminal",
-			Title:       "Configurar Terminal",
-			Description: "Configura Alacritty con el tema XEBEC",
-		},
-		{
-			ID:          "shell",
-			Title:       "Configurar Shell",
-			Description: "Configura Nushell + Starship",
-		},
-		{
-			ID:          "tools",
-			Title:       "Instalar Herramientas",
-			Description: "Instala fzf, zoxide, bat, delta, eza",
-		},
-		{
-			ID:          "status",
-			Title:       "Ver Estado",
-			Description: "Muestra el estado de las configuraciones",
-		},
-		{
-			ID:          "backup",
-			Title:       "Crear Backup",
-			Description: "Crea un backup de las configuraciones",
-		},
-		{
-			ID:          "restore",
-			Title:       "Restaurar Backup",
-			Description: "Restaura desde un backup anterior",
-		},
-		{
-			ID:          "exit",
-			Title:       "Salir",
-			Description: "Salir del CLI",
-		},
+	menuOpts := GetMenuOptions()
+	options := make([]MenuOption, len(menuOpts))
+
+	for i, opt := range menuOpts {
+		options[i] = MenuOption{
+			ID:          opt.ID,
+			Icon:        opt.Icon,
+			Title:       opt.Title,
+			Description: opt.Description,
+		}
 	}
+
+	return options
 }
 
 // Inicializar el programa
@@ -116,14 +100,14 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // Ejecutar la opción seleccionada
 func executeSelected(option MenuOption) tea.Cmd {
 	return func() tea.Msg {
-		// Aquí se ejecutarían las acciones
-		// Por ahora solo mostraremos un mensaje
 		fmt.Println()
-		fmt.Println(RenderInfo(fmt.Sprintf("Ejecutando: %s", option.Title)))
+		fmt.Println(RenderInfo(fmt.Sprintf("%s %s", BrandingConfig.Texts.Executing, option.Title)))
 		fmt.Println(MutedTextStyle.Render(option.Description))
 		fmt.Println()
-		
-		// Simular ejecución
+
+		// Ejecutar acción específica según la opción
+		executeMenuAction(option.ID)
+
 		return tea.Msg("executed:" + option.ID)
 	}
 }
@@ -135,7 +119,14 @@ func (m MenuModel) View() string {
 	if width == 0 {
 		width = 80
 	}
-	
+
+	// Usar textos del branding
+	cliLabel := BrandingConfig.Texts.CLILabel
+	platformLabel := BrandingConfig.Texts.PlatformLabel
+	menuTitle := BrandingConfig.Texts.MenuTitle
+	footerNav := BrandingConfig.Texts.FooterNav
+	separator := GetSeparator()
+
 	// Estilos
 	titleStyle := lipgloss.NewStyle().
 		Foreground(CorporateBlue).
@@ -168,36 +159,36 @@ func (m MenuModel) View() string {
 
 	// Construir vista
 	s := ""
-	
+
 	// Banner
 	s += titleStyle.Render(BannerASCII) + "\n"
 	s += "\n"
-	
+
 	// Info de versión y plataforma
-	s += titleStyle.Width(width - 20).Render(fmt.Sprintf("CLI v%s  |  Platform: %s", m.Version, m.Platform)) + "\n"
-	s += separatorStyle.Render("═══════════════════════════════════════════════════") + "\n"
+	s += titleStyle.Width(width-20).Render(fmt.Sprintf("%s v%s  |  %s: %s", cliLabel, m.Version, platformLabel, m.Platform)) + "\n"
+	s += separatorStyle.Render(separator) + "\n"
 	s += "\n"
 
 	// Título del menú
-	s += titleStyle.Render("Menú Principal") + "\n"
+	s += titleStyle.Render(menuTitle) + "\n"
 	s += "\n"
 
 	// Opciones
 	for i, option := range m.Options {
 		if i == m.Selected {
-			s += optionSelectedStyle.Render(fmt.Sprintf("► %s", option.Title)) + "\n"
+			s += optionSelectedStyle.Render(fmt.Sprintf("► %s %s", option.Icon, option.Title)) + "\n"
 			s += optionDescStyle.Render(option.Description) + "\n"
 		} else {
-			s += optionUnselectedStyle.Render(fmt.Sprintf("  %s", option.Title)) + "\n"
+			s += optionUnselectedStyle.Render(fmt.Sprintf("  %s %s", option.Icon, option.Title)) + "\n"
 		}
 	}
 
 	s += "\n"
-	s += separatorStyle.Render("═══════════════════════════════════════════════════") + "\n"
+	s += separatorStyle.Render(separator) + "\n"
 	s += "\n"
 
 	// Footer
-	s += footerStyle.Render("Presiona ↑/↓ para navegar, Enter para seleccionar, q para salir")
+	s += footerStyle.Render(footerNav)
 
 	return s
 }
@@ -209,49 +200,111 @@ func RunMenu(version string) error {
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
 	)
-	
+
 	_, err := p.Run()
 	return err
+}
+
+// Ejecutar acción del menú
+func executeMenuAction(optionID string) {
+	switch optionID {
+	case "terminal":
+		showTerminalSelection()
+	case "shell":
+		fmt.Println(RenderInfo("🚀 Configurando Shell..."))
+	case "tools":
+		fmt.Println(RenderInfo("🛠️ Instalando herramientas..."))
+	case "status":
+		fmt.Println(RenderInfo("📊 Mostrando estado..."))
+	case "backup":
+		fmt.Println(RenderInfo("💾 Creando backup..."))
+	case "restore":
+		fmt.Println(RenderInfo("♻️ Restaurando backup..."))
+	case "exit":
+		fmt.Println(SuccessStyle.Render(BrandingConfig.Texts.Goodbye))
+	default:
+		fmt.Println(RenderInfo("Opción no implementada"))
+	}
+}
+
+// Mostrar selección de terminal
+func showTerminalSelection() {
+	fmt.Println()
+	fmt.Println(TitleStyle.Render("🖥️ Detectar Terminales Instalados"))
+	fmt.Println()
+
+	terminals := os.DetectTerminals()
+
+	if len(terminals) == 0 {
+		fmt.Println(MutedTextStyle.Render("No se detectó ningún terminal compatible"))
+		return
+	}
+
+	for i, t := range terminals {
+		status := "❌ No instalado"
+		if t.Installed {
+			if t.Exists {
+				status = "✅ Configurado"
+			} else {
+				status = "⚙️ Sin configurar"
+			}
+		}
+		fmt.Printf("%d. %s %s\n", i+1, t.Icon, TitleStyle.Render(t.Name))
+		fmt.Printf("   %s\n", MutedTextStyle.Render(status))
+		if t.ConfigPath != "" {
+			fmt.Printf("   📁 %s\n", MutedTextStyle.Render(t.ConfigPath))
+		}
+		fmt.Println()
+	}
+
+	fmt.Print(PromptStyle.Render("Selecciona un terminal para configurar: "))
 }
 
 // Ejecutar menú simple (sin bubbletea para modo no-TTY)
 func RunSimpleMenu(version string) error {
 	ShowBanner()
 	fmt.Println()
-	
+
 	options := getMainMenuOptions()
-	
+
+	// Usar textos del branding
+	menuTitle := BrandingConfig.Texts.MenuTitle
+	promptSel := BrandingConfig.Texts.PromptSel
+	optionInvalid := BrandingConfig.Texts.OptionInvalid
+	goodbye := BrandingConfig.Texts.Goodbye
+	executing := BrandingConfig.Texts.Executing
+
 	for {
-		fmt.Println("\n" + TitleStyle.Render("Menú Principal") + "\n")
-		
+		fmt.Println("\n" + TitleStyle.Render(menuTitle) + "\n")
+
 		for i, option := range options {
 			fmt.Printf("%d. %s\n", i+1, option.Title)
 			fmt.Printf("   %s\n", MutedTextStyle.Render(option.Description))
 		}
-		
+
 		fmt.Println()
-		fmt.Print(PromptStyle.Render("Selecciona una opción: "))
-		
+		fmt.Print(PromptStyle.Render(promptSel))
+
 		var choice int
 		_, err := fmt.Scanf("%d", &choice)
 		if err != nil {
 			return err
 		}
-		
+
 		if choice < 1 || choice > len(options) {
-			fmt.Println(ErrorStyle.Render("Opción inválida"))
+			fmt.Println(ErrorStyle.Render(optionInvalid))
 			continue
 		}
-		
+
 		selected := options[choice-1]
-		
+
 		if selected.ID == "exit" {
-			fmt.Println(SuccessStyle.Render("¡Hasta luego!"))
+			fmt.Println(SuccessStyle.Render(goodbye))
 			return nil
 		}
-		
+
 		fmt.Println()
-		fmt.Println(RenderInfo(fmt.Sprintf("Ejecutando: %s", selected.Title)))
+		fmt.Println(RenderInfo(fmt.Sprintf("%s %s", executing, selected.Title)))
 		fmt.Println(MutedTextStyle.Render(selected.Description))
 		fmt.Println()
 	}

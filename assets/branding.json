@@ -1,0 +1,74 @@
+{
+  "name": "XEBEC",
+  "version": "0.1.0",
+  "logo": "██╗  ██╗███████╗██████╗ ███████╗██╗  ██╗     ██████╗██╗     ██╗\n╚██╗██╔╝██╔════╝██╔══██╗██╔════╝╚██╗██╔╝    ██╔════╝██║     ██║\n  ╚██╔╝ █████╗  ██████╔╝█████╗   ╚██╔╝       ██║     ██║     ██║\n ██╔██╗ ██╔══╝  ██╔══██╗██╔══╝   ██ ██╗    ██║     ██║     ██║\n██╔╝ ██╗███████╗█████╝║███████╗██║  ██║    ╚██████╗███████╗██║\n╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝     ╚═════╝╚══════╝╚═╝\n",
+  "separator": "═══════════════════════════════════════════════════",
+  "colors": {
+    "primary": "#00AEEF",
+    "secondary": "#0A0A0A",
+    "white": "#FFFFFF",
+    "accent_cyan": "#00BCD4",
+    "accent_green": "#4CAF50",
+    "accent_orange": "#FF9800",
+    "accent_red": "#F44336",
+    "accent_yellow": "#FFEB3B",
+    "gray_dark": "#1a1a1a",
+    "gray": "#333333",
+    "gray_light": "#666666",
+    "gray_lighter": "#999999"
+  },
+  "texts": {
+    "cli_label": "CLI",
+    "platform_label": "Platform",
+    "menu_title": "Menú Principal",
+    "footer_navigation": "Presiona ↑/↓ para navegar, Enter para seleccionar, q para salir",
+    "prompt_selection": "Selecciona una opción:",
+    "option_invalid": "Opción inválida",
+    "goodbye": "¡Hasta luego!",
+    "executing": "Ejecutando:"
+  },
+  "menu_options": [
+    {
+      "id": "terminal",
+      "icon": "🖥️",
+      "title": "Configurar Terminal",
+      "description": "Configura Alacritty con el tema XEBEC"
+    },
+    {
+      "id": "shell",
+      "icon": "🐚",
+      "title": "Configurar Shell",
+      "description": "Configura Nushell + Starship"
+    },
+    {
+      "id": "tools",
+      "icon": "🛠️",
+      "title": "Instalar Herramientas",
+      "description": "Instala fzf, zoxide, bat, delta, eza"
+    },
+    {
+      "id": "status",
+      "icon": "📊",
+      "title": "Ver Estado",
+      "description": "Muestra el estado de las configuraciones"
+    },
+    {
+      "id": "backup",
+      "icon": "💾",
+      "title": "Crear Backup",
+      "description": "Crea un backup de las configuraciones"
+    },
+    {
+      "id": "restore",
+      "icon": "♻️",
+      "title": "Restaurar Backup",
+      "description": "Restaura desde un backup anterior"
+    },
+    {
+      "id": "exit",
+      "icon": "🚪",
+      "title": "Salir",
+      "description": "Salir del CLI"
+    }
+  ]
+}
