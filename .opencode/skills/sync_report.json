@@ -1,0 +1,133 @@
+{
+  "total": 8,
+  "valid": 8,
+  "errors": 0,
+  "warnings": 0,
+  "skills": [
+    {
+      "name": "auto-commit",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\auto-commit",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "auto-commit",
+          "description": "Auto-commit y push automático después de implementar funciones en XebecCorporation.Dots."
+        },
+        "scripts": true
+      }
+    },
+    {
+      "name": "skill-commits",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\skill-commits",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "skill-commits",
+          "description": "Conventional Commits con Iconos para XebecCorporation.Dots"
+        }
+      }
+    },
+    {
+      "name": "skill-generator",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\skill-generator",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "skill-generator",
+          "description": "Guía completa para crear, desarrollar y empaquetar nuevos skills para OpenCode siguiendo el estándar Agent Skills de Anthropic. Usa este skill cuando necesites crear un nuevo skill desde cero, actualizar uno existente, o entender las mejores prácticas para diseñar skills efectivos.",
+          "license": "Apache-2.0"
+        },
+        "scripts": true,
+        "references": true
+      }
+    },
+    {
+      "name": "skill-sync",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\skill-sync",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "skill-sync",
+          "description": "Skill para sincronizar y recargar skills en OpenCode, coordinar con el orquestador y gestionar agentes y subagentes del proyecto XebecCorporation.Dots."
+        },
+        "scripts": true
+      }
+    },
+    {
+      "name": "test-skill",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\test-skill",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "agents": "",
+        "frontmatter": {
+          "name": "test-skill",
+          "description": "Skill de prueba para testing",
+          "agents": ""
+        },
+        "scripts": true,
+        "references": true,
+        "assets": true
+      }
+    },
+    {
+      "name": "xebec-cli",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\xebec-cli",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "xebec-cli",
+          "description": "Skill para desarrollar y mantener el CLI de XebecCorporation.Dots, incluyendo comandos, acciones y estructura del proyecto."
+        }
+      }
+    },
+    {
+      "name": "xebec-config",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\xebec-config",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "xebec-config",
+          "description": "Skill para gestionar configuraciones de terminal, shell y herramientas del ecosistema XEBEC CORPORATION."
+        }
+      }
+    },
+    {
+      "name": "xebec-docs",
+      "path": "C:\\Users\\qty94\\Documents\\XebecCorporation.Dots\\.opencode\\skills\\xebec-docs",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "info": {
+        "frontmatter": {
+          "name": "xebec-docs",
+          "description": "Genera documentación completa para el proyecto XebecCorporation.Dots. Incluye estructura de directorios, configuración de herramientas, guías de uso y referencias técnicas."
+        },
+        "scripts": true,
+        "references": true,
+        "assets": true
+      }
+    }
+  ],
+  "available_agents": [
+    "terminal-config",
+    "shell-config",
+    "tools-install",
+    "explore",
+    "analysis",
+    "generator"
+  ]
+}
