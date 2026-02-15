@@ -604,7 +604,7 @@ func (m MenuModel) View() string {
 		content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
 		content += "\n"
 		content += tableStyle.Render(borderTop) + "\n"
-		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Detectado", "Configurado", "Version")) + "\n"
+		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Version", "Detectado", "Configurado")) + "\n"
 		content += tableStyle.Render(borderMid) + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
@@ -654,12 +654,12 @@ func (m MenuModel) View() string {
 				version = centerString("v1.0", colStatus) // Placeholder - luego se puede implementar detección real
 			}
 
-			// Si está seleccionado
+			// Si está seleccionado - orden: #, Terminal, Version, Detectado, Configurado
 			if m.Selected == i {
-				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, detected, configured, version)
+				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, version, detected, configured)
 				content += selectedStyle.Render(row) + "\n"
 			} else {
-				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, detected, configured, version)
+				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, version, detected, configured)
 				content += tableStyle.Render(row) + "\n"
 			}
 		}
