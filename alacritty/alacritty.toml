@@ -1,0 +1,63 @@
+# ============================
+#   XEBEC CORPORATION TERMINAL
+#   FULL IMMERSION MODE
+# ============================
+
+[terminal.shell]
+program = "C:\\Users\\qty94\\AppData\\Local\\Programs\\nu\\bin\\nu.exe"
+args = ["--login"]
+
+[window]
+decorations = "None"          # Sin bordes ni barra de título
+opacity = 0.85                # Transparencia elegante
+startup_mode = "Maximized"    # Ocupa toda la pantalla
+dynamic_title = false
+
+[window.padding]
+x = 0
+y = 0
+
+[font]
+size = 13.0
+
+[font.normal]
+family = "JetBrains Mono"
+style = "Regular"
+
+[font.bold]
+family = "JetBrains Mono"
+style = "Bold"
+
+[font.italic]
+family = "JetBrains Mono"
+style = "Italic"
+
+[cursor.style]
+shape = "Beam"
+blinking = "On"
+
+[colors.primary]
+background = "#000000"      # Fondo transparente real
+foreground = "#E6E6E6"
+
+[colors.normal]
+black = "#0A0A0A"
+red = "#FF4C4C"
+green = "#4CAF50"
+yellow = "#FFC107"
+blue = "#00AEEF"     # XEBEC BLUE
+magenta = "#9C27B0"
+cyan = "#26C6DA"
+white = "#E6E6E6"
+
+[colors.bright]
+black = "#4A4A4A"
+red = "#FF6B6B"
+green = "#81C784"
+yellow = "#FFD54F"
+blue = "#29B6F6"
+magenta = "#BA68C8"
+cyan = "#4DD0E1"
+white = "#FFFFFF"
+
+[terminal]

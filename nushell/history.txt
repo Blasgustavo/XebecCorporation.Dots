@@ -1,0 +1,754 @@
+ls
+cd
+exit
+cd Documents\
+ls
+cd SistemasOS\
+clear
+ks
+clear
+ls
+cd sis-com\
+dir
+cd
+cd Documents\SistemasOS\sis-com\
+clear
+ls
+code .
+clear
+cd Documents\SistemasOS\sis-com\
+ls
+code .
+cd..
+cd Documents\SistemasOS\
+cd Documents\SistemasOS
+cd Documents\SistemasOS\
+ls
+cd
+cd Documents\SistemasOS\
+cd apis-siscom\
+ls
+code .
+npm run dev
+cd apis-siscom\
+cd Documents\SistemasOS\
+ls
+cd sis-com\
+ls
+git add .
+git commit -m "configuracion para usar tailwind y daisyui, modificando mis ui"
+git push
+clear
+shutdown 0
+exit
+cd Documents\SistemasOS\
+ls
+cd apis-siscom\
+cd Documents\SistemasOS\sis-com\
+ls
+code .
+npm run dev
+cd Documents\SistemasOS\sis-com\
+code .
+cd Documents\SistemasOS\apis-siscom\
+ls
+npm run dev
+npm run dev
+code .
+npm run dev
+cd Documents\SistemasOS\apis-siscom\
+code .
+cd Documents\SistemasOS\sis-com\
+code .
+npm run dev
+cd
+cd Documents\SistemasOS\sis-com\
+ls
+code .
+cd Documents\SistemasOS\apis-siscom\
+npm run dev
+cd ..
+cd..
+cd .
+cd ..
+clear
+cd Documents\SistemasOS\apis-siscom\
+code .
+cd Documents\SistemasOS\sis-com\
+ls
+code .
+ls
+npm i
+cd Documents\SistemasOS\sis-com\
+cd
+cd Documents\SistemasOS\sis-com\
+code .
+cd Documents\SistemasOS\apis-siscom\
+ls
+code .
+npm run dev
+npm install express-fileupload
+CLEAR
+clear
+cd
+cd Documents\SistemasOS\apis-siscom\
+code .
+cd Documents\SistemasOS\sis-com\
+code .
+npm run dev
+npm i multer
+npm run dev
+npm i cors
+npm run dev
+npm uninstall express-fileupload
+clear
+npm run dev
+cd
+cd Documents\SistemasOS\sis-com\
+code .
+cd Documents\SistemasOS\apis-siscom\
+git add .
+git commit -m "se elimina exxpres-uppp y se recofigura multer"
+git push
+git add .
+git commit -m "actualizacion de update subir imagenes a cloudinary"
+git push
+code .
+npm run dev
+git add .
+git commit -m "añadiendo lista de usuarios usando angularforms y directivas"
+git push
+exit
+cd
+cd Documents\SistemasOS\apis-siscom\
+code .
+cd ..
+ls
+cd  apis-siscom\
+ls
+npm run dev
+cd Documents\SistemasOS\apis-siscom\
+ls
+cd ..
+ls
+cd sis-com\
+ls
+code .
+cd
+cd Documents\SistemasOS\
+cd apis-siscom\
+cd Documents\SistemasOS\sis-com\
+ls
+code .
+npm run dev
+ls
+cd
+cd Documents\SistemasOS\sis-com\
+ls
+code .
+cd Documents\SistemasOS\apis-siscom\
+cd
+cd Documents\SistemasOS\apis-siscom\
+cd Documents\SistemasOS\sis-com\code .
+cd Documents\SistemasOS\sis-com\
+clear
+s
+clear
+ls
+code .
+npm run dev
+cd
+winget install Starship.Starship
+starship --version
+winget install ajeetdsouza.zoxide
+zoxide --version
+starship --version
+zoxide --version
+winget install atuinsh.atuin
+winget install rsteube.Carapace
+carapace --version
+starship init nu | save -f ~/.cache/starship/init.nu
+zoxide init nushell | save -f ~/.zoxide.nu
+atuin init nu | save -f ~/.local/share/atuin/init.nu
+carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
+starship init nu | save -f ~/.cache/starship/init.nu
+zoxide init nushell | save -f ~/.zoxide.nu
+atuin init nu | save -f ~/.local/share/atuin/init.nu
+carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
+which starship
+which zoxide
+which atuin
+which carapace
+starship init nu | save -f ~/.cache/starship/init.nu
+starship --version
+starship init nu | save -f ~/.cache/starship/init.nu
+winget list
+starship init nu | save -f ~/.cache/starship/init.nu
+zoxide init nushell | save -f ~/.zoxide.nu
+atuin init nu | save -f ~/.local/share/atuin/init.nu
+carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
+atuin init nu | save -f ~/.local/share/atuin/init.nu
+carapace --version
+carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
+mkdir ~/.cache/carapace
+carapace _carapace nushell | save --force ~/.cache/carapace/init.nu
+ls ~/.cache/carapace/init.nu
+exit
+starship --version
+mkdir ~/.cache/oh-my-nu
+http get https://raw.githubusercontent.com/nushell/nu_scripts/main/modules/prompt/oh-my.nu | save -f ~/.cache/oh-my-nu/oh-my.nu
+clear
+ls
+clear
+cd Documents\SistemasOS\sis-com\
+ls
+code ,
+ls
+code .
+cd Documents\SistemasOS\apis-siscom\
+ls
+cd Documents\
+ls
+npx n8n
+code .
+ls
+cd
+cd Documents\SistemasOS\
+ls
+cd n8n-master\
+code .
+curl -fsSL https://opencode.ai/install | bash
+clear
+$nu.config-path
+$env.NU_DISABLE_BANNER = false
+$env.NU_DISABLE_BANNER
+print " Nushell listo para despegar"
+$nu.config-path
+clear
+ls
+opencode
+cd Documents\SistemasOS\
+ls
+cd sis-com\
+open code .
+opencode .
+curl -fsSL https://opencode.sh/install | bash
+ls
+cd ..
+ls
+npm install -g opencode-ai
+npm install -g npm@11.7.0
+npm install -g opencode-ai
+opencode .
+clear
+clea
+clear
+opencode
+clear
+cd Documents\SistemasOS\
+ls
+cd Documents\SistemasOS\
+clear
+ls sis-com\
+cd sis-com\
+ls
+code .
+clear
+cd Documents\
+ls
+cd SIS-COM\}
+cd SIS-COM\
+ls
+clear
+opencode init
+ls
+mkdir init
+ls
+opencode init
+clear
+cd SIS-COM\
+cd Documents\SIS-COM\
+ls
+opencode init
+cd Documents\SIS-COM\
+clear
+ls
+opencode init --template node
+clear
+ls
+cd init
+ls
+cd
+ls
+cd Documents\SIS-COM\
+ls
+CLEAR
+clear
+cd Documents\SIS-COM\
+code .
+CLEAR
+clear
+ls
+cd Documents\
+ls
+cd SIS-COM\
+ls
+npm i -g @nestjs/cli
+clear
+ls
+nest new fieldops.backend
+ls
+cd fieldops.backend\
+ls
+clear
+ls
+code .
+clear
+npm install @nestjs/mongoose mongoose
+clear
+cd Documents\
+cd SIS-COM\
+ls
+cd
+cd Documents\
+ls
+cd SistemasOS\
+ls
+cd apis-siscom\
+ls
+code.
+code .
+ls
+clear
+git init
+git add .
+clear
+ls
+clear
+cd Documents\
+ls
+cd SIS-COM\
+ls
+cd fieldops.backend\
+ls
+git init
+git  add .
+cd
+ls
+git status
+rmdir /s /q .git
+rm -rf .git
+git status
+clear
+ls
+cd Documents\
+ls
+cd SistemasOS\
+ls
+cd
+cd Documents\SIS-COM\
+ls
+cd fieldops.backend\
+clear
+git init
+git add .
+git commit -m "creacion de proyecto backen con estructura y uso de nestjs"
+git branch -M main
+git remote add origin https://github.com/Blasgustavo/fieldops.backend.git
+git push -u origin main
+npm install @nestjs/config
+npm install cloudinary multer-storage-cloudinary @nestjs/config
+clear
+npm install --save-dev @types/cloudinary
+ls
+npm install --save-dev @types/cloudinary
+npm install cloudinary --save
+npm install --save-dev @types/cloudinary
+npm list @nestjs/config
+npm install @nestjs/config@latest
+npm list @nestjs/config
+npm run start:dev
+rm -rf dist
+rm -rf node_modules
+npm install
+npm run start:dev
+npm install @nestjs/core @nestjs/common --save
+rm -r node_modules/.cache
+npm start
+clear
+ls
+cd Documents\
+ls
+cd SIS-COM\
+ls
+cd fieldops.backend\
+ls
+git pull origin main
+clear
+ls
+git status
+git pull origin main --rebase
+git add .
+git commit -m "error en la coneccion de bd"
+git pull origin main
+clear
+git pull origin main
+clear
+code .
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+git branch -r
+git fetch origin
+git reset --hard origin/main
+git clean -fd
+code .
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+npm run start:dev
+npm list @nestjs/core @nestjs/common @nestjs/mongoose mongoose
+npm install mongoose
+clear
+npm list mongoose
+npm install @nestjs/config
+clear
+npm run start:dev
+npm install @nestjs/mongoose@11 mongoose@7
+npm run start:dev
+clear
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+npm i @nestjs/jwt @nestjs/passport passport passport-jwt bcrypt
+npm i -D @types/bcrypt @types/passport-jwt
+clear
+npm i class-validator class-transformer
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+npm run start:dev
+node
+clear
+mongo
+mongodb
+brew install mongodb-atlas
+npm run start:dev
+git add .
+git commit -m "se realizo la configuracion del api/auth exitosamente"
+git push origin main
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+clear
+LS
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+ls
+cd Documents\SIS-COM\fieldops.backend\
+clear
+cd Documents\SIS-COM\fieldops.backend\
+code .
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+npm run start:dev
+npm install @nestjs/mapped-types
+clear
+npm install @nestjs/mapped-types@2
+npm install
+clear
+ls
+cd Documents\SIS-COM\fieldops.backend\
+npm run start:dev
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+cd Documents\SIS-COM\fieldops.backend\
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+cd Documents\SIS-COM\fieldops.backend\
+clear
+npm install pino pino-pretty @nestjs/pino
+npm install nestjs-pino pino pino-pretty
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+clear
+ls
+clear
+ls
+clear
+ls
+clear
+npm install joi @types/joi
+clear
+ls
+npm run start:dev
+clear
+cd Documents\SIS-COM\fieldops.backend\
+clear
+code .
+cd Documents\SIS-COM\fieldops.backend\
+clear
+cd Documents\SIS-COM\fieldops.backend\
+code .
+clear
+cd Documents\SIS-COM\fieldops.backend\
+git add .
+git status
+git commit -m  "feat(cuadrillas): implement API"
+git push -u origin main
+code .
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+ls
+clear
+opencode init
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+clear
+opencode init
+ls
+clear
+opencode init fieldops.backend
+opencode -v
+npm uninstall -g @opencode/cli
+opencode -v
+npm install -g @opencode/cli
+npm i -g opencode-ai
+clear
+dir
+ls
+clear
+opencode init
+clear
+cd Documents\SIS-COM\
+ls
+cd fieldops.backend\
+ls
+opencode init
+opencode
+ls
+clear
+ls
+git add .
+git commit -m  "chore(general) - Configuracion de arquitectura OPENCODE"
+git push -u origin main
+opencode
+clear
+cd fieldops.backend\
+cd Documents\SIS-COM\
+cd fieldops.backend\
+ls
+code .
+opencode
+clear
+ls
+clear
+ollama list
+curl -s http://127.0.0.1:11434/api/tags | jq .
+ollama ps
+ollama --version
+winget upgrade Ollama
+# Si usas la carpeta del paquete:
+export OLLAMA_MODELS=/usr/share/ollama/.ollama/models
+# o, si prefieres usar la carpeta “home” (más fácil de manipular):
+mkdir -p ~/.ollama/models
+cp -r /ruta/de/tu/modelo ~/.ollama/models/
+ollama list
+clear
+ollama create Llama3.3-8B-HB
+ollama run Llama3.3-8B-HB
+ollama serve
+clear
+ollama create llama3-8b-hb -f C:\Users\qty94\.ollama\custom-models\llama3-8b-hb\Modelfile
+ollama run llama3.1:8b
+ollama run llama3.1
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+ls
+cd Documents\SIS-COM\fieldops.backend\
+clear
+npm run start:dev
+git add .
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+cd Documents\SIS-COM\fieldops.backend\
+ls
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+npm run start:dev
+npm run build && echo " BUILD SUCCESS"
+npm run build
+npm run start:dev
+opencode
+cd Documents\SIS-COM\fieldops.backend\
+ls
+git add .
+git commit -m  "feat(dashboard) - se añade el dassboard y se agrega funcionalidad a carpetas con  OPENCODE"
+git push -u origin main
+clear
+opencode
+clear
+cd Documents\SIS-PY\
+ls
+python3
+1.helloword.py
+python 1.helloword.py
+python -version
+python --version
+clear
+python 1.helloword.py
+clear
+cd Documents\SIS-COM\fieldops.backend\
+code .
+opencode
+cd Documents\SIS-COM\fieldops.backend\
+clear
+npm run start:dev
+o
+clear
+opencode
+clear
+cd Documents\SIS-COM\fieldops.backend\
+opencode
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+clear
+opencode
+clear
+ls
+opencode
+clear
+cd Documents\SIS-COM\fieldops.backend\
+clear
+opencode
+cd Documents\SIS-COM\fieldops.backend\
+opencode
+npm install -g opencode-windows-x64
+opencode --version
+ls
+opencode
+cd Documents\SIS-COM\fieldops.backend\
+opencode
+cd Documents\SIS-COM\fieldops.backend\
+opencode
+exit
+ls
+cd Documents\SIS-COM\fieldops.backend\
+ls
+code .
+clear
+cd Documents\SIS-COM\fieldops.backend\
+ls
+cd Documents\SIS-COM\fieldops.backend\
+code .
+clear
+cd Documents\SIS-COM\fieldops.backend\
+open code .
+cd..
+cd
+ls
+cd Documents\SIS-COM\
+ls
+code .
+ls
+git init
+git commit -m "start - Inicio de proyecto"
+git branch -M main
+git remote add origin https://github.com/Blasgustavo/ElectroSys.git
+git push -u origin main
+git init .
+git commit -m "start - Inicio de proyecto"
+git branch -M main
+git remote add origin https://github.com/Blasgustavo/ElectroSys.git
+git push -u origin main
+git push
+git add .
+git commit -m "start - Inicio de proyecto"
+git push -u origin main
+open code .
+opencode
+cd Documents\SIS-COM\
+cd Documents\
+ls
+cd ElectroSys\
+ls
+git status
+code .
+ls
+cd ElectroSys\
+cd Documents\ElectroSys\
+opencode
+cd Documents\ElectroSys\
+ls
+cd Documents\ElectroSys\
+code .
+ls
+npm install -g firebase-tools
+firebase login
+firebase use electrosysbg-5b366
+firebase login
+export FIREBASE_PROJECT=ElectroSys
+firebase use ElectroSys
+firebase use electrosys
+firebase use electrosysbg-5b366
+export FIREBASE_PROJECT=ElectroSys
+npm install firebase
+gcloud firestore indexes list --project electrosysbg-5b366
+gcloud --version
+ls
+cd ElectroSys.backend\
+npm install
+cd Documents\ElectroSys\
+git clone https://github.com/Blasgustavo/PdfSuportBG.git
+ls
+cd PdfSuportBG\
+migrate to TOML
+alacritty migrate
+alacritty --versioin
+alacritty --version
+winget install Starship.Starship
+notepad $nu.config-path
+starship init nu | save -f ~/.cache/starship/init.nu
+notepad $nu.config-path
+alacritty migrate
+exit
+alacritty migrate
+exit
+clear
+alacritty migrate
+exit
+cd Documents\
+ls
+git remote add origin https://github.com/Blasgustavo/XebecCorporation.Dots.git
+cd XebecCorporation.Dots\
+git remote add origin https://github.com/Blasgustavo/XebecCorporation.Dots.git
+git remote clone https://github.com/Blasgustavo/XebecCorporation.Dots.git
+cd ..
+ls
+git clone https://github.com/Blasgustavo/XebecCorporation.Dots.git
+cd XebecCorporation.Dots\
+code .
+notepad $nu.config-path
