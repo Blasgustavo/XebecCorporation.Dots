@@ -500,16 +500,28 @@ func (m MenuModel) View() string {
 	if m.CurrentMenu == "terminal" {
 		terminals := m.CachedTerminals
 
-		content += titleStyle.Render("Terminales Detectados") + "\n"
-		content += "\n"
+		// Estilo de tabla tipo Nushell
+		tableStyle := lipgloss.NewStyle().
+			Foreground(GrayLighter).
+			Bold(true)
 
-		// Encabezados de la tabla
-		content += fmt.Sprintf("  %-22s │ %-10s │ %s\n",
-			"Terminal", "Detectado", "Configurado")
-		content += "  " + strings.Repeat("─", 50) + "\n"
+		selectedStyle := lipgloss.NewStyle().
+			Foreground(AccentPurple).
+			Bold(true)
+
+		// Bordes de tabla tipo Nushell
+		topBorder := "╭───┬──────────────┬───────────┬─────────────╮"
+		midBorder := "├───┼──────────────┼───────────┼─────────────┤"
+		botBorder := "╰───┴──────────────┴───────────┴─────────────╯"
+
+		content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
+		content += "\n"
+		content += tableStyle.Render(topBorder) + "\n"
+		content += tableStyle.Render("│   │ Terminal      │ Detectado │ Configurado │") + "\n"
+		content += tableStyle.Render(midBorder) + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
-		maxVisible := 6
+		maxVisible := 5
 		offset := 0
 		if len(terminals) > maxVisible && m.Selected >= maxVisible {
 			offset = m.Selected - maxVisible + 1
@@ -527,7 +539,6 @@ func (m MenuModel) View() string {
 			endIdx = len(terminals)
 		}
 
-		// Determinar qué terminal está seleccionado (excluyendo botones de acción)
 		terminalOptionsCount := len(terminals)
 
 		for i := offset; i < endIdx; i++ {
@@ -549,11 +560,15 @@ func (m MenuModel) View() string {
 
 			// Si está seleccionado
 			if m.Selected == i {
-				content += optionSelectedStyle.Render(fmt.Sprintf("► %s %-20s │ %-10s │ %s\n", t.Icon, t.Name, detected, configured))
+				row := fmt.Sprintf("│ ▶ │ %-12s │ %-9s │ %-11s│", t.Name, detected, configured)
+				content += selectedStyle.Render(row) + "\n"
 			} else {
-				content += optionUnselectedStyle.Width(contentWidth).Render(fmt.Sprintf("  %s %-20s │ %-10s │ %s\n", t.Icon, t.Name, detected, configured))
+				row := fmt.Sprintf("│   │ %-12s │ %-9s │ %-11s│", t.Name, detected, configured)
+				content += tableStyle.Render(row) + "\n"
 			}
 		}
+
+		content += tableStyle.Render(botBorder) + "\n"
 
 		content += "\n"
 
@@ -571,7 +586,7 @@ func (m MenuModel) View() string {
 		if m.Selected == actionIdx+1 {
 			content += backStyle.Render("► Volver") + "\n"
 		} else {
-			content += backStyle.Width(contentWidth).Render("  ← Volver") + "\n"
+			content += backStyle.Width(contentWidth).Render("  Volver") + "\n"
 		}
 
 		footerNav := "Presiona ↑/↓ para seleccionar, Enter para configurar, ← para volver"
