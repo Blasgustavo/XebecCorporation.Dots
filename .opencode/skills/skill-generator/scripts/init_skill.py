@@ -36,30 +36,41 @@ def create_skill_structure(skill_name: str, output_path: Path) -> None:
     (skill_path / "references").mkdir(exist_ok=True)
     (skill_path / "assets").mkdir(exist_ok=True)
     
-    # Crear SKILL.md base
+    # Crear SKILL.md base siguiendo estándar Anthropic
     skill_md = f"""---
 name: {skill_name}
-description: Descripción breve del skill. Explica qué hace y cuándo usarlo.
+description: Descripción breve del skill (máx 200 caracteres). Explica qué hace y cuándo usarlo.
 ---
 
 # {skill_name.replace('-', ' ').title()}
 
-Este skill proporciona...
+Este skill proporciona... [describe brevemente la funcionalidad]
 
-## Uso
+## Cuándo Usar
 
-Describe cómo usar este skill...
+Describe cuándo Claude debe activar este skill. Por ejemplo:
+- "Usa este skill cuando el usuario necesite..."
+
+## Instrucciones
+
+1. **Paso 1**: [Descripción del primer paso]
+2. **Paso 2**: [Descripción del segundo paso]
+3. **Paso 3**: [Descripción del tercer paso]
 
 ## Ejemplos
 
-```bash
-# Ejemplo de uso
-```
+### Ejemplo 1
+Input: "..."
+Output: "..."
 
-## Notas
+### Ejemplo 2
+Input: "..."
+Output: "..."
 
-- Consideraciones importantes
-- Restricciones
+## Recursos
+
+- [Referencia](references/archivo.md)
+- [Script](scripts/script.py)
 """
     
     (skill_path / "SKILL.md").write_text(skill_md, encoding='utf-8')
@@ -94,16 +105,16 @@ Contenido...
     # Crear .gitkeep en assets
     (skill_path / "assets" / ".gitkeep").touch()
     
-    print(f"✓ Skill '{skill_name}' creado en: {skill_path}")
+    print(f"[OK] Skill '{skill_name}' creado en: {skill_path}")
     print("\nEstructura creada:")
     print(f"  {skill_name}/")
-    print(f"  ├── SKILL.md")
-    print(f"  ├── scripts/")
-    print(f"  │   └── example.py")
-    print(f"  ├── references/")
-    print(f"  │   └── example.md")
-    print(f"  └── assets/")
-    print("\nPróximos pasos:")
+    print(f"  +-- SKILL.md")
+    print(f"  +-- scripts/")
+    print(f"  |   +-- example.py")
+    print(f"  +-- references/")
+    print(f"  |   +-- example.md")
+    print(f"  +-- assets/")
+    print("\nProximos pasos:")
     print(f"  1. Edita {skill_name}/SKILL.md con tu contenido")
     print(f"  2. Personaliza o elimina scripts/references/assets")
     print(f"  3. Ejecuta package_skill.py para validar")
