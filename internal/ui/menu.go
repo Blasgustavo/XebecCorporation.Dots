@@ -231,7 +231,9 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "down", "j":
 			if m.CurrentMenu == "terminal" {
-				if m.Selected < 1 {
+				terminals := os.DetectTerminals()
+				maxOptions := len(terminals) + 2
+				if m.Selected < maxOptions-1 {
 					m.Selected++
 				}
 			} else {
@@ -284,18 +286,62 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // Manejar Enter - navegar o ejecutar
 func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
-	// Si estamos en el menú de terminal, manejar los botones
+	// Si estamos en el menú de terminal
 	if m.CurrentMenu == "terminal" {
-		if m.Selected == 0 {
-			// Actualizar - simplemente refresh y continuar
+		terminals := os.DetectTerminals()
+		terminalCount := len(terminals)
+
+		// Si Selected es un índice de terminal (0 a terminalCount-1)
+		if m.Selected < terminalCount {
+			// Entrar al submenú de ese terminal
+			t := terminals[m.Selected]
+			submenuID := "terminal_" + t.ID
+
+			// Crear opciones del submenú para este terminal
+			submenuOpts := []MenuOption{
+				{
+					ID:          submenuID + "_config",
+					Icon:        "⚙️",
+					Title:       "Configurar",
+					Description: "Aplicar configuración de XEBEC",
+				},
+				{
+					ID:          submenuID + "_install",
+					Icon:        "📥",
+					Title:       "Instalar",
+					Description: "Instalar " + t.Name,
+				},
+				{
+					ID:          "back",
+					Icon:        "←",
+					Title:       "Volver",
+					Description: "Volver a la lista de terminales",
+					IsBack:      true,
+				},
+			}
+
+			m.History = append(m.History, MenuLevel{
+				ID:      submenuID,
+				Title:   t.Name,
+				Options: submenuOpts,
+			})
+			m.CurrentMenu = submenuID
+			m.Selected = 0
+			return *m, nil
+		}
+
+		// Selected == terminalCount → Actualizar
+		if m.Selected == terminalCount {
 			return *m, func() tea.Msg {
 				showTerminalsTable()
 				fmt.Println()
 				fmt.Println(SuccessStyle.Render("🔄 Terminales actualizados"))
 				return nil
 			}
-		} else if m.Selected == 1 {
-			// Volver al menú principal
+		}
+
+		// Selected == terminalCount + 1 → Volver
+		if m.Selected == terminalCount+1 {
 			if len(m.History) > 1 {
 				m.History = m.History[:len(m.History)-1]
 				m.CurrentMenu = m.History[len(m.History)-1].ID
@@ -442,26 +488,84 @@ func (m MenuModel) View() string {
 
 	// Si es el menú de terminal, mostrar tabla directamente
 	if m.CurrentMenu == "terminal" {
-		content += renderTerminalTable(contentWidth) + "\n"
+		terminals := os.DetectTerminals()
+
+		content += titleStyle.Render("📋 Terminales Detectados") + "\n"
 		content += "\n"
 
-		// Botones de acción
+		// Encabezados de la tabla
+		content += fmt.Sprintf("  %-20s │ %-10s │ %-12s\n",
+			"Terminal", "Detectado", "Configurado")
+		content += "  " + strings.Repeat("─", 52) + "\n"
+
+		// Calcular offset para scroll si hay muchos terminales
+		maxVisible := 6
+		offset := 0
+		if len(terminals) > maxVisible && m.Selected >= maxVisible {
+			offset = m.Selected - maxVisible + 1
+		}
+		if offset > len(terminals)-maxVisible {
+			offset = len(terminals) - maxVisible
+		}
+		if offset < 0 {
+			offset = 0
+		}
+
+		// Mostrar terminales (solo los visibles)
+		endIdx := offset + maxVisible
+		if endIdx > len(terminals) {
+			endIdx = len(terminals)
+		}
+
+		// Determinar qué terminal está seleccionado (excluyendo botones de acción)
+		terminalOptionsCount := len(terminals)
+
+		for i := offset; i < endIdx; i++ {
+			t := terminals[i]
+
+			// Detectado
+			detected := "❌"
+			if t.Installed {
+				detected = "✅"
+			}
+
+			// Configurado
+			configured := "❌"
+			if t.Exists {
+				configured = "✅"
+			} else if t.Installed {
+				configured = "⚙️"
+			}
+
+			// Si está seleccionado
+			if m.Selected == i {
+				content += optionSelectedStyle.Render(fmt.Sprintf("► %s %-17s │ %-10s │ %-12s\n", t.Icon, t.Name, detected, configured))
+			} else {
+				content += optionUnselectedStyle.Width(contentWidth).Render(fmt.Sprintf("  %s %-17s │ %-10s │ %-12s\n", t.Icon, t.Name, detected, configured))
+			}
+		}
+
+		content += "\n"
+
+		// Botones de acción al final
 		content += titleStyle.Render("Acciones") + "\n"
 		content += "\n"
 
-		if m.Selected == 0 {
+		actionIdx := terminalOptionsCount // Índice del primer botón
+
+		if m.Selected == actionIdx {
 			content += actionStyle.Render("► 🔄 Actualizar") + "\n"
 		} else {
 			content += actionStyle.Width(contentWidth).Render("  🔄 Actualizar") + "\n"
 		}
 
-		if m.Selected == 1 {
+		if m.Selected == actionIdx+1 {
 			content += backStyle.Render("► ← Volver") + "\n"
 		} else {
 			content += backStyle.Width(contentWidth).Render("  ← Volver") + "\n"
 		}
 
-		footerNav := "Presiona ↑/↓ para seleccionar, Enter para ejecutar, ← para volver"
+		footerNav := "Presiona ↑/↓ para seleccionar, Enter para configurar, ← para volver"
 		content += "\n"
 		content += separatorStyle.Render(separator) + "\n"
 		content += "\n"
