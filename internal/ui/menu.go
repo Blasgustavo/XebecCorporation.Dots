@@ -15,6 +15,29 @@ import (
 	"github.com/XebecCorporation/XebecCorporation.Dots/internal/os"
 )
 
+// ============================================
+// Mensajes personalizados para navegación
+// ============================================
+
+// NavigateToMsg mensaje para navegar a un submenú
+type NavigateToMsg struct {
+	MenuID  string
+	Title   string
+	Options []MenuOption
+}
+
+// GoBackMsg mensaje para volver al menú anterior
+type GoBackMsg struct{}
+
+// ExecuteActionMsg mensaje para ejecutar una acción
+type ExecuteActionMsg struct {
+	ActionID string
+}
+
+// ============================================
+// Funciones de gradiente
+// ============================================
+
 // GradientText aplica un gradiente a un texto
 func GradientText(text string, startColor, endColor string) string {
 	start := colorToRGB(startColor)
@@ -49,7 +72,6 @@ func GradientText(text string, startColor, endColor string) string {
 	return strings.Join(result, "\n")
 }
 
-// RGB para gradiente
 type rgb struct {
 	r, g, b uint8
 }
@@ -66,6 +88,10 @@ func colorToRGB(s string) rgb {
 	fmt.Sscanf(s, "%02x%02x%02x", &r, &g, &b)
 	return rgb{r, g, b}
 }
+
+// ============================================
+// Estructuras del menú
+// ============================================
 
 // Opción del menú
 type MenuOption struct {
@@ -85,35 +111,33 @@ type MenuLevel struct {
 	Options []MenuOption
 }
 
-// Modelo del menú con soporte para submenús
+// Modelo del menú
 type MenuModel struct {
-	CurrentLevel int
-	History      []MenuLevel
-	Selected     int
-	Quitting     bool
-	Version      string
-	Platform     string
-	Width        int
-	Height       int
+	History     []MenuLevel
+	CurrentMenu string
+	Selected    int
+	Quitting    bool
+	Version     string
+	Platform    string
+	Width       int
+	Height      int
 }
 
-// Inicializar el modelo
+// NewMenuModel crea un nuevo modelo de menú
 func NewMenuModel(version string) MenuModel {
 	if version == "" {
 		version = GetVersion()
 	}
 
 	m := MenuModel{
-		CurrentLevel: 0,
-		History:      []MenuLevel{},
-		Selected:     0,
-		Version:      version,
-		Platform:     getPlatformInfo(),
+		History:     []MenuLevel{},
+		CurrentMenu: "main",
+		Selected:    0,
+		Version:     version,
+		Platform:    getPlatformInfo(),
 	}
 
-	// Cargar menú principal
 	m.loadMainMenu()
-
 	return m
 }
 
@@ -127,7 +151,7 @@ func (m *MenuModel) loadMainMenu() {
 			Options: options,
 		},
 	}
-	m.CurrentLevel = 0
+	m.CurrentMenu = "main"
 	m.Selected = 0
 }
 
@@ -150,7 +174,7 @@ func getMenuOptionsFromBranding() []MenuOption {
 	return options
 }
 
-// Obtener opciones de submenú desde branding
+// Obtener opciones de submenú
 func getSubmenuOptions(parentID string) []MenuOption {
 	submenuOpts := GetSubmenu(parentID)
 	if submenuOpts == nil {
@@ -174,18 +198,20 @@ func getSubmenuOptions(parentID string) []MenuOption {
 
 // Obtener opciones actuales
 func (m *MenuModel) getCurrentOptions() []MenuOption {
-	if m.CurrentLevel < len(m.History) {
-		return m.History[m.CurrentLevel].Options
+	if len(m.History) > 0 {
+		return m.History[len(m.History)-1].Options
 	}
 	return []MenuOption{}
 }
 
-// Inicializar el programa
+// ============================================
+// tea.Model implementation
+// ============================================
+
 func (m MenuModel) Init() tea.Cmd {
 	return nil
 }
 
-// Actualizar el modelo según los mensajes
 func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -199,74 +225,98 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Selected++
 			}
 		case "enter", " ":
-			return m, m.executeSelected()
+			return m.handleEnter()
 		case "left", "backspace", "h":
-			// Volver al menú anterior
-			if m.CurrentLevel > 0 {
-				m.goBack()
-			}
+			return m.handleGoBack()
 		case "q", "ctrl+c", "esc":
 			m.Quitting = true
 			return m, tea.Quit
 		}
+
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width
 		m.Height = msg.Height
+
+	case NavigateToMsg:
+		m.History = append(m.History, MenuLevel{
+			ID:      msg.MenuID,
+			Title:   msg.Title,
+			Options: msg.Options,
+		})
+		m.CurrentMenu = msg.MenuID
+		m.Selected = 0
+
+	case GoBackMsg:
+		if len(m.History) > 1 {
+			m.History = m.History[:len(m.History)-1]
+			m.CurrentMenu = m.History[len(m.History)-1].ID
+			m.Selected = 0
+		}
+
+	case ExecuteActionMsg:
+		executeMenuAction(msg.ActionID)
 	}
 	return m, nil
 }
 
-// Ejecutar la opción seleccionada
-func (m *MenuModel) executeSelected() tea.Cmd {
+// Manejar Enter - navegar o ejecutar
+func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
 	options := m.getCurrentOptions()
 	if m.Selected >= len(options) {
-		return nil
+		return *m, nil
 	}
 
 	option := options[m.Selected]
 
-	return func() tea.Msg {
-		if option.IsExit {
-			fmt.Println()
-			fmt.Println(SuccessStyle.Render(BrandingConfig.Texts.Goodbye))
-			return tea.Quit()
-		}
+	if option.IsExit {
+		fmt.Println()
+		fmt.Println(SuccessStyle.Render(BrandingConfig.Texts.Goodbye))
+		return *m, tea.Quit
+	}
 
-		if option.IsBack {
-			m.goBack()
-			return nil
-		}
-
-		// Verificar si es un submenú
-		submenuOpts := getSubmenuOptions(option.ID)
-		if submenuOpts != nil {
-			// Entrar al submenú
-			m.History = append(m.History, MenuLevel{
-				ID:      option.ID,
-				Title:   option.Title,
-				Options: submenuOpts,
-			})
-			m.CurrentLevel = len(m.History) - 1
+	if option.IsBack {
+		if len(m.History) > 1 {
+			m.History = m.History[:len(m.History)-1]
+			m.CurrentMenu = m.History[len(m.History)-1].ID
 			m.Selected = 0
-			return nil
 		}
+		return *m, nil
+	}
 
-		// Ejecutar acción de la opción
+	// Verificar si tiene submenú
+	submenuOpts := getSubmenuOptions(option.ID)
+	if submenuOpts != nil {
+		m.History = append(m.History, MenuLevel{
+			ID:      option.ID,
+			Title:   option.Title,
+			Options: submenuOpts,
+		})
+		m.CurrentMenu = option.ID
+		m.Selected = 0
+		return *m, nil
+	}
+
+	// Ejecutar acción
+	return *m, func() tea.Msg {
 		executeMenuAction(option.ID)
 		return nil
 	}
 }
 
-// Volver al menú anterior
-func (m *MenuModel) goBack() {
-	if m.CurrentLevel > 0 {
-		m.History = m.History[:m.CurrentLevel]
-		m.CurrentLevel--
+// Manejar Volver
+func (m *MenuModel) handleGoBack() (MenuModel, tea.Cmd) {
+	if len(m.History) > 1 {
+		m.History = m.History[:len(m.History)-1]
+		m.CurrentMenu = m.History[len(m.History)-1].ID
 		m.Selected = 0
 	}
+	return *m, nil
 }
 
-// Renderizar la vista
+// ============================================
+// View - Renderizado del menú
+// ============================================
+
 func (m MenuModel) View() string {
 	width := m.Width
 	if width == 0 {
@@ -279,12 +329,12 @@ func (m MenuModel) View() string {
 	}
 
 	options := m.getCurrentOptions()
-	currentLevel := m.History[m.CurrentLevel]
+	currentLevel := m.History[len(m.History)-1]
 
 	cliLabel := BrandingConfig.Texts.CLILabel
 	platformLabel := BrandingConfig.Texts.PlatformLabel
 	separator := GetSeparator()
-	isSubmenu := m.CurrentLevel > 0
+	isSubmenu := len(m.History) > 1
 	footerNav := GetFooterText(isSubmenu)
 
 	// Estilos
@@ -380,7 +430,11 @@ func (m MenuModel) View() string {
 	return s
 }
 
-// Ejecutar el menú interactivo
+// ============================================
+// Funciones públicas
+// ============================================
+
+// RunMenu ejecuta el menú interactivo
 func RunMenu(version string) error {
 	p := tea.NewProgram(
 		NewMenuModel(version),
@@ -392,7 +446,10 @@ func RunMenu(version string) error {
 	return err
 }
 
-// Ejecutar acción del menú
+// ============================================
+// Acciones del menú
+// ============================================
+
 func executeMenuAction(optionID string) {
 	fmt.Println()
 	fmt.Println(RenderInfo(fmt.Sprintf("%s %s", BrandingConfig.Texts.Executing, getMenuActionTitle(optionID))))
@@ -538,7 +595,7 @@ func configureAlacritty() {
 	fmt.Println(MutedTextStyle.Render("Usa 'xebec install tools' para instalar herramientas"))
 }
 
-// Mostrar selección de terminal (legacy)
+// showTerminalSelection - legacy
 func showTerminalSelection() {
 	fmt.Println()
 	fmt.Println(TitleStyle.Render("🖥️ Detectar Terminales Instalados"))
@@ -571,7 +628,7 @@ func showTerminalSelection() {
 	fmt.Print(PromptStyle.Render("Selecciona un terminal para configurar: "))
 }
 
-// Ejecutar menú simple (legacy)
+// RunSimpleMenu - legacy
 func RunSimpleMenu(version string) error {
 	ShowBanner()
 	fmt.Println()
