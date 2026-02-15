@@ -15,13 +15,14 @@ import (
 
 // Estructuras para el branding
 type Branding struct {
-	Name      string               `json:"name"`
-	Version   string               `json:"version"`
-	Logo      string               `json:"logo"`
-	Separator string               `json:"separator"`
-	Colors    Colors               `json:"colors"`
-	Texts     Texts                `json:"texts"`
-	MenuOpts  []MenuOptionBranding `json:"menu_options"`
+	Name      string                          `json:"name"`
+	Version   string                          `json:"version"`
+	Logo      string                          `json:"logo"`
+	Separator string                          `json:"separator"`
+	Colors    Colors                          `json:"colors"`
+	Texts     Texts                           `json:"texts"`
+	MenuOpts  []MenuOptionBranding            `json:"menu_options"`
+	Submenus  map[string][]MenuOptionBranding `json:"submenus"`
 }
 
 type Colors struct {
@@ -47,10 +48,12 @@ type Texts struct {
 	PlatformLabel string `json:"platform_label"`
 	MenuTitle     string `json:"menu_title"`
 	FooterNav     string `json:"footer_navigation"`
+	FooterBack    string `json:"footer_back"`
 	PromptSel     string `json:"prompt_selection"`
 	OptionInvalid string `json:"option_invalid"`
 	Goodbye       string `json:"goodbye"`
 	Executing     string `json:"executing"`
+	Back          string `json:"back"`
 }
 
 type MenuOptionBranding struct {
@@ -58,6 +61,7 @@ type MenuOptionBranding struct {
 	Icon        string `json:"icon"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Submenu     bool   `json:"submenu"`
 }
 
 // Variable global con el branding cargado
@@ -151,4 +155,33 @@ func GetSeparator() string {
 // GetMenuOptions returns the menu options from branding
 func GetMenuOptions() []MenuOptionBranding {
 	return BrandingConfig.MenuOpts
+}
+
+// GetSubmenu returns the submenu options for a given parent ID
+func GetSubmenu(parentID string) []MenuOptionBranding {
+	if submenus, ok := BrandingConfig.Submenus[parentID]; ok {
+		return submenus
+	}
+	return nil
+}
+
+// HasSubmenu checks if a menu option has a submenu
+func HasSubmenu(menuID string) bool {
+	for _, opt := range BrandingConfig.MenuOpts {
+		if opt.ID == menuID && opt.Submenu {
+			return true
+		}
+	}
+	return false
+}
+
+// GetFooterText returns the appropriate footer text based on current menu level
+func GetFooterText(isSubmenu bool) string {
+	if isSubmenu {
+		if BrandingConfig.Texts.FooterBack != "" {
+			return BrandingConfig.Texts.FooterBack
+		}
+		return "Presiona ← para volver"
+	}
+	return BrandingConfig.Texts.FooterNav
 }

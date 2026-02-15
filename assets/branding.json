@@ -1,7 +1,7 @@
 {
   "name": "XEBEC",
   "version": "0.1.0",
-  "logo": "██╗  ██╗███████╗██████╗ ███████╗██╗  ██╗     ██████╗██╗     ██╗\n╚██╗██╔╝██╔════╝██╔══██╗██╔════╝╚██╗██╔╝    ██╔════╝██║     ██║\n  ╚██╔╝ █████╗  ██████╔╝█████╗   ╚██╔╝       ██║     ██║     ██║\n ██╔██╗ ██╔══╝  ██╔══██╗██╔══╝   ██ ██╗    ██║     ██║     ██║\n██╔╝ ██╗███████╗█████╝║███████╗██║  ██║    ╚██████╗███████╗██║\n╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝     ╚═════╝╚══════╝╚═╝\n",
+  "logo": "██╗  ██╗███████╗██████╗ ███████╗██╗  ██╗     ██████╗██╗     ██╗\n╗██╔╝██╔════╝╚████╔══██╗██╔════╝╚██╗██╔╝    ██╔════╝██║     ██║\n  ╚██╔╝ █████╗  ██████╔╝█████╗   ╚██╔╝       ██║     ██║     ██║\n ██╔██╗ ██╔══╝  ██╔══██╗██╔══╝   ██ ██╗    ██║     ██║     ██║\n██╔╝ ██╗███████╗█████╝║███████╗██║  ██║    ╚██████╗███████╗██║\n╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝     ╚═════╝╚══════╝╚═╝\n",
   "separator": "═══════════════════════════════════════════════════",
   "colors": {
     "primary": "#6366F1",
@@ -25,29 +25,34 @@
     "platform_label": "Platform",
     "menu_title": "Menú Principal",
     "footer_navigation": "Presiona ↑/↓ para navegar, Enter para seleccionar, q para salir",
+    "footer_back": "Presiona ← para volver al menú anterior",
     "prompt_selection": "Selecciona una opción:",
     "option_invalid": "Opción inválida",
     "goodbye": "¡Hasta luego!",
-    "executing": "Ejecutando:"
+    "executing": "Ejecutando:",
+    "back": "Volver"
   },
   "menu_options": [
     {
       "id": "terminal",
       "icon": "🖥️",
       "title": "Configurar Terminal",
-      "description": "Configura Alacritty con el tema XEBEC"
+      "description": "Configura Alacritty con el tema XEBEC",
+      "submenu": true
     },
     {
       "id": "shell",
       "icon": "🐚",
       "title": "Configurar Shell",
-      "description": "Configura Nushell + Starship"
+      "description": "Configura Nushell + Starship",
+      "submenu": true
     },
     {
       "id": "tools",
       "icon": "🛠️",
       "title": "Instalar Herramientas",
-      "description": "Instala fzf, zoxide, bat, delta, eza"
+      "description": "Instala fzf, zoxide, bat, delta, eza",
+      "submenu": true
     },
     {
       "id": "status",
@@ -73,5 +78,115 @@
       "title": "Salir",
       "description": "Salir del CLI"
     }
-  ]
+  ],
+  "submenus": {
+    "terminal": [
+      {
+        "id": "terminal_alacritty",
+        "icon": "⚡",
+        "title": "Alacritty",
+        "description": "Configurar Alacritty"
+      },
+      {
+        "id": "terminal_wezterm",
+        "icon": "🔥",
+        "title": "WezTerm",
+        "description": "Configurar WezTerm"
+      },
+      {
+        "id": "terminal_kitty",
+        "icon": "🐱",
+        "title": "Kitty",
+        "description": "Configurar Kitty"
+      },
+      {
+        "id": "terminal_windows",
+        "icon": "🪟",
+        "title": "Windows Terminal",
+        "description": "Configurar Windows Terminal"
+      },
+      {
+        "id": "back",
+        "icon": "←",
+        "title": "Volver",
+        "description": "Volver al menú principal"
+      }
+    ],
+    "shell": [
+      {
+        "id": "shell_nushell",
+        "icon": "🐚",
+        "title": "Nushell",
+        "description": "Configurar Nushell"
+      },
+      {
+        "id": "shell_starship",
+        "icon": "⭐",
+        "title": "Starship",
+        "description": "Configurar Starship"
+      },
+      {
+        "id": "shell_zsh",
+        "icon": "🦪",
+        "title": "Zsh",
+        "description": "Configurar Zsh"
+      },
+      {
+        "id": "shell_powershell",
+        "icon": "💜",
+        "title": "PowerShell",
+        "description": "Configurar PowerShell"
+      },
+      {
+        "id": "back",
+        "icon": "←",
+        "title": "Volver",
+        "description": "Volver al menú principal"
+      }
+    ],
+    "tools": [
+      {
+        "id": "tools_fzf",
+        "icon": "🔍",
+        "title": "fzf",
+        "description": "Instalar fzf - Buscador fuzzy"
+      },
+      {
+        "id": "tools_zoxide",
+        "icon": "📍",
+        "title": "zoxide",
+        "description": "Instalar zoxide - Navegador de directorios"
+      },
+      {
+        "id": "tools_bat",
+        "icon": "🦇",
+        "title": "bat",
+        "description": "Instalar bat - Reemplazo de cat"
+      },
+      {
+        "id": "tools_delta",
+        "icon": "📐",
+        "title": "delta",
+        "description": "Instalar delta - Pager para git"
+      },
+      {
+        "id": "tools_eza",
+        "icon": "📁",
+        "title": "eza",
+        "description": "Instalar eza - Reemplazo de ls"
+      },
+      {
+        "id": "tools_all",
+        "icon": "✨",
+        "title": "Instalar Todo",
+        "description": "Instalar todas las herramientas"
+      },
+      {
+        "id": "back",
+        "icon": "←",
+        "title": "Volver",
+        "description": "Volver al menú principal"
+      }
+    ]
+  }
 }
