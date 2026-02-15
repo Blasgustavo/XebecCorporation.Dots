@@ -590,21 +590,21 @@ func (m MenuModel) View() string {
 		// Anchos de columnas
 		colNum := 3           // para número
 		colName := maxNameLen // para terminal
-		colStatus := 10       // para detectado/configurado
+		colStatus := 10       // para detectado/configurado/version
 
-		// Construir formato de borde dinámico
-		borderTop := "╭" + strings.Repeat("─", colNum+2) + "┬" + strings.Repeat("─", colName+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "╮"
-		borderMid := "├" + strings.Repeat("─", colNum+2) + "┼" + strings.Repeat("─", colName+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┤"
-		borderBot := "╰" + strings.Repeat("─", colNum+2) + "┴" + strings.Repeat("─", colName+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "╯"
+		// Construir bordes dinámicos para 5 columnas
+		borderTop := "╭" + strings.Repeat("─", colNum+2) + "┬" + strings.Repeat("─", colName+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "╮"
+		borderMid := "├" + strings.Repeat("─", colNum+2) + "┼" + strings.Repeat("─", colName+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┤"
+		borderBot := "╰" + strings.Repeat("─", colNum+2) + "┴" + strings.Repeat("─", colName+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "╯"
 
-		// Formato de filas
-		headerFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "s │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
-		rowFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "d │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
+		// Formato de filas (5 columnas)
+		headerFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "s │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
+		rowFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "d │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
 
 		content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
 		content += "\n"
 		content += tableStyle.Render(borderTop) + "\n"
-		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Detectado", "Configurado")) + "\n"
+		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Detectado", "Configurado", "Version")) + "\n"
 		content += tableStyle.Render(borderMid) + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
@@ -645,15 +645,21 @@ func (m MenuModel) View() string {
 				configured = centerString("⚙️", colStatus)
 			}
 
-			// Nombre con icono
-			terminalName := fmt.Sprintf("%s %s", t.Icon, t.Name)
+			// Nombre con icono formato "icono - nombre"
+			terminalName := fmt.Sprintf("%s - %s", t.Icon, t.Name)
+
+			// Version (por ahora N/A ya que no tenemos esa info)
+			version := centerString("N/A", colStatus)
+			if t.Installed {
+				version = centerString("v1.0", colStatus) // Placeholder - luego se puede implementar detección real
+			}
 
 			// Si está seleccionado
 			if m.Selected == i {
-				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, detected, configured)
+				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, detected, configured, version)
 				content += selectedStyle.Render(row) + "\n"
 			} else {
-				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, detected, configured)
+				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, detected, configured, version)
 				content += tableStyle.Render(row) + "\n"
 			}
 		}
