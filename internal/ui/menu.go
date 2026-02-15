@@ -104,7 +104,7 @@ func colorToRGB(s string) rgb {
 
 // centerString centra un string en un ancho dado
 func centerString(s string, width int) string {
-	sLen := len(s)
+	sLen := displayWidth(s)
 	if sLen >= width {
 		return s
 	}
@@ -113,6 +113,22 @@ func centerString(s string, width int) string {
 	return strings.Repeat(" ", left) + s + strings.Repeat(" ", right)
 }
 
+// displayWidth calcula el ancho visual de un string (emojis = 2 caracteres)
+func displayWidth(s string) int {
+	width := 0
+	for _, r := range s {
+		if r >= 0x1000 {
+			// Emoji u otro carácter wide
+			width += 2
+		} else {
+			width += 1
+		}
+	}
+	return width
+}
+
+// ============================================
+// Estructuras del menú
 // ============================================
 // Estructuras del menú
 // ============================================
@@ -577,7 +593,7 @@ func (m MenuModel) View() string {
 		// Calcular ancho máximo del nombre del terminal (incluyendo icono)
 		maxNameLen := 10 // mínimo
 		for _, t := range terminals {
-			nameLen := len(t.Icon) + 3 + len(t.Name) // icono + " - " + nombre
+			nameLen := displayWidth(t.Icon) + 3 + displayWidth(t.Name) // icono + " - " + nombre
 			if nameLen > maxNameLen {
 				maxNameLen = nameLen
 			}
@@ -645,8 +661,8 @@ func (m MenuModel) View() string {
 				configured = centerString("⚙️", colStatus)
 			}
 
-			// Nombre formateado: icono + " - " + nombre (alineado)
-			// Usamos formato que se alinee correctamente
+			// Nombre formateado: icono + " - " + nombre
+			// El padding lo maneja automáticamente el formato %s
 			terminalName := t.Icon + " - " + t.Name
 
 			// Version (por ahora N/A ya que no tenemos esa info)
