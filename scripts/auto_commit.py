@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Script de commit automático con conventional commits
+Script de commit commits
 Detecta el tipo de cambio y genera el mensaje apropiado
+Soporta args: automático con conventional auto-commit [--no-push] [mensaje]
 """
 
 import subprocess
@@ -61,7 +62,7 @@ def generate_commit_message(commit_type, description):
     emoji = COMMIT_TYPES[commit_type]["emoji"]
     return f"{emoji} {commit_type}: {description}"
 
-def commit(message=None):
+def commit(message=None, do_push=True):
     """Hace el commit"""
     # Verificar si hay cambios
     changes = get_git_changes()
@@ -92,6 +93,19 @@ def commit(message=None):
             text=True
         )
         print(f"[OK] Commit: {result.stdout.strip()}")
+        
+        # Push si se requiere
+        if do_push:
+            push_result = subprocess.run(
+                ["git", "push"],
+                capture_output=True,
+                text=True
+            )
+            if push_result.returncode == 0:
+                print("[OK] Push completado")
+            else:
+                print(f"[WARN] Push falló: {push_result.stderr}")
+        
         return True
     else:
         print(f"[ERROR] {result.stderr}")
@@ -99,10 +113,16 @@ def commit(message=None):
 
 def main():
     message = None
-    if len(sys.argv) > 1:
-        message = " ".join(sys.argv[1:])
+    do_push = True
     
-    commit(message)
+    # Parsear argumentos
+    for arg in sys.argv[1:]:
+        if arg == "--no-push":
+            do_push = False
+        elif not arg.startswith("-"):
+            message = arg
+    
+    commit(message, do_push)
 
 if __name__ == "__main__":
     main()

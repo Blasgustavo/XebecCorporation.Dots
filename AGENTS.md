@@ -40,6 +40,26 @@ XebecCorporation.Dots/
 3. `go test ./...` - Ejecutar tests
 4. `golangci-lint run` - Linting (cuando esté configurado)
 
+## Auto-Commit Rule
+
+**IMPORTANTE**: Después de cada función implementada, DEBES ejecutar auto-commit:
+
+```bash
+python scripts/auto_commit.py
+```
+
+Esto commiteará y hará push automáticamente con mensaje conventional.
+
+Para mensaje personalizado:
+```bash
+python scripts/auto_commit.py "feat: Nueva funcionalidad"
+```
+
+Para solo commit sin push:
+```bash
+python scripts/auto_commit.py --no-push
+```
+
 ## Key Components
 
 - **Orquestador**: Coordina la ejecución de agentes y subagentes para flujos completos de configuración.
