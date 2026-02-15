@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
+	"time"
 )
 
 // Terminal detectado en el sistema
@@ -382,8 +384,8 @@ func detectTerminalByCommands(id, name, icon string, commands []string, configFu
 		t.Installed = searchInCommonPaths(commands)
 	}
 
-	// Si está instalado, detectar versión
-	if t.Installed && versionCmd != "" {
+	// Si está instalado, detectar versión (solo si no es un terminal problematico)
+	if t.Installed && versionCmd != "" && !terminalsNoVersion[id] {
 		t.Version = getTerminalVersion(versionCmd)
 	}
 
@@ -404,35 +406,63 @@ func detectTerminalByCommands(id, name, icon string, commands []string, configFu
 	return t
 }
 
+// Terminales que no deben ejecutar comando de versión (abren GUI)
+var terminalsNoVersion = map[string]bool{
+	"windows-terminal": true,
+	"hyper":            true,
+	"tabby":            true,
+	"windterm":         true,
+	"electerm":         true,
+	"terminus":         true,
+	"conemu":           true,
+	"cmder":            true,
+	"fterminal":        true,
+	"terminal-buddy":   true,
+	"iterm2":           true,
+	"terminal":         true,
+}
+
 // getTerminalVersion ejecuta el comando de versión y parsea el resultado
 func getTerminalVersion(versionCmd string) string {
-	// Usar shell según la plataforma
+	// Usar PowerShell en Windows para mejor control (no abre ventana)
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/C", versionCmd)
+		cmd = exec.Command("powershell", "-NoProfile", "-Command", versionCmd)
 	} else {
 		cmd = exec.Command("sh", "-c", versionCmd)
 	}
 
-	output, err := cmd.Output()
-	if err != nil {
+	// Configurar para que no muestre ventana en Windows
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			HideWindow: true,
+		}
+	}
+
+	// Timeout de 3 segundos para no bloquear
+	done := make(chan string, 1)
+	go func() {
+		output, err := cmd.Output()
+		if err != nil {
+			done <- "N/A"
+			return
+		}
+		version := strings.TrimSpace(string(output))
+		if strings.Contains(version, "\n") {
+			version = strings.Split(version, "\n")[0]
+		}
+		if len(version) > 20 {
+			version = version[:20]
+		}
+		done <- version
+	}()
+
+	select {
+	case version := <-done:
+		return version
+	case <-time.After(3 * time.Second):
 		return "N/A"
 	}
-
-	// Limpiar el output - quitar espacios y líneas extra
-	version := strings.TrimSpace(string(output))
-
-	// Si hay múltiples líneas, tomar solo la primera
-	if strings.Contains(version, "\n") {
-		version = strings.Split(version, "\n")[0]
-	}
-
-	// Truncar si es muy largo
-	if len(version) > 20 {
-		version = version[:20]
-	}
-
-	return version
 }
 
 // Buscar en rutas comunes de instalación
