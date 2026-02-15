@@ -220,17 +220,37 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up", "k":
-			if m.Selected > 0 {
-				m.Selected--
+			if m.CurrentMenu == "terminal" {
+				if m.Selected > 0 {
+					m.Selected--
+				}
+			} else {
+				if m.Selected > 0 {
+					m.Selected--
+				}
 			}
 		case "down", "j":
-			if m.Selected < len(m.getCurrentOptions())-1 {
-				m.Selected++
+			if m.CurrentMenu == "terminal" {
+				if m.Selected < 1 {
+					m.Selected++
+				}
+			} else {
+				if m.Selected < len(m.getCurrentOptions())-1 {
+					m.Selected++
+				}
 			}
 		case "enter", " ":
 			return m.handleEnter()
 		case "left", "backspace", "h":
-			return m.handleGoBack()
+			if m.CurrentMenu == "terminal" && len(m.History) > 1 {
+				m.History = m.History[:len(m.History)-1]
+				m.CurrentMenu = m.History[len(m.History)-1].ID
+				m.Selected = 0
+			} else if len(m.History) > 1 {
+				m.History = m.History[:len(m.History)-1]
+				m.CurrentMenu = m.History[len(m.History)-1].ID
+				m.Selected = 0
+			}
 		case "q", "ctrl+c", "esc":
 			m.Quitting = true
 			return m, tea.Quit
@@ -264,6 +284,27 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // Manejar Enter - navegar o ejecutar
 func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
+	// Si estamos en el menú de terminal, manejar los botones
+	if m.CurrentMenu == "terminal" {
+		if m.Selected == 0 {
+			// Actualizar - simplemente refresh y continuar
+			return *m, func() tea.Msg {
+				showTerminalsTable()
+				fmt.Println()
+				fmt.Println(SuccessStyle.Render("🔄 Terminales actualizados"))
+				return nil
+			}
+		} else if m.Selected == 1 {
+			// Volver al menú principal
+			if len(m.History) > 1 {
+				m.History = m.History[:len(m.History)-1]
+				m.CurrentMenu = m.History[len(m.History)-1].ID
+				m.Selected = 0
+			}
+			return *m, nil
+		}
+	}
+
 	options := m.getCurrentOptions()
 	if m.Selected >= len(options) {
 		return *m, nil
@@ -367,6 +408,10 @@ func (m MenuModel) View() string {
 		Foreground(AccentCyan).
 		Padding(0, 2)
 
+	actionStyle := lipgloss.NewStyle().
+		Foreground(AccentGreen).
+		Padding(0, 2)
+
 	footerStyle := lipgloss.NewStyle().
 		Foreground(GrayLighter).
 		Width(contentWidth).
@@ -395,12 +440,43 @@ func (m MenuModel) View() string {
 		content += "\n"
 	}
 
-	// Título del menú actual
+	// Si es el menú de terminal, mostrar tabla directamente
+	if m.CurrentMenu == "terminal" {
+		content += renderTerminalTable(contentWidth) + "\n"
+		content += "\n"
+
+		// Botones de acción
+		content += titleStyle.Render("Acciones") + "\n"
+		content += "\n"
+
+		if m.Selected == 0 {
+			content += actionStyle.Render("► 🔄 Actualizar") + "\n"
+		} else {
+			content += actionStyle.Width(contentWidth).Render("  🔄 Actualizar") + "\n"
+		}
+
+		if m.Selected == 1 {
+			content += backStyle.Render("► ← Volver") + "\n"
+		} else {
+			content += backStyle.Width(contentWidth).Render("  ← Volver") + "\n"
+		}
+
+		footerNav := "Presiona ↑/↓ para seleccionar, Enter para ejecutar, ← para volver"
+		content += "\n"
+		content += separatorStyle.Render(separator) + "\n"
+		content += "\n"
+		content += footerStyle.Render(footerNav)
+
+		s := borderStyle.Width(contentWidth).Render(content)
+		return s
+	}
+
+	// Título del menú actual para otros submenús
 	menuTitle := currentLevel.Title
 	content += titleStyle.Foreground(AccentPurple).Render(menuTitle) + "\n"
 	content += "\n"
 
-	// Opciones
+	// Opciones del menú
 	for i, option := range options {
 		if i == m.Selected {
 			if option.IsBack {
@@ -561,7 +637,67 @@ func getMenuActionDescription(id string) string {
 	return ""
 }
 
-// showTerminalsTable muestra una tabla con los terminales
+// renderTerminalTable retorna la tabla de terminales como string para el View
+func renderTerminalTable(contentWidth int) string {
+	terminals := os.DetectTerminals()
+	supportedTerminals := os.GetSupportedTerminals()
+
+	// Crear mapa de soportados
+	supportedMap := make(map[string]bool)
+	for _, t := range supportedTerminals {
+		supportedMap[t] = true
+	}
+
+	// Estilos para la tabla
+	tableTitleStyle := lipgloss.NewStyle().
+		Bold(true).
+		Width(contentWidth).
+		Align(lipgloss.Center)
+
+	tableHeaderStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(GrayLighter)
+
+	tableRowStyle := lipgloss.NewStyle().
+		Foreground(CorporateWhite)
+
+	// Construir tabla
+	result := tableTitleStyle.Render("📋 Terminales Detectados") + "\n"
+	result += "\n"
+
+	// Encabezados
+	result += fmt.Sprintf("  %-20s │ %-10s │ %-12s\n",
+		tableHeaderStyle.Render("Terminal"),
+		tableHeaderStyle.Render("Detectado"),
+		tableHeaderStyle.Render("Configurado"))
+	result += "  " + strings.Repeat("─", 52) + "\n"
+
+	// Filas
+	for _, t := range terminals {
+		// Detectado: si está instalado
+		detected := "❌"
+		if t.Installed {
+			detected = "✅"
+		}
+
+		// Configurado: si ya está configurado
+		configured := "❌"
+		if t.Exists {
+			configured = "✅"
+		} else if t.Installed {
+			configured = "⚙️"
+		}
+
+		result += fmt.Sprintf("  %s %-17s │ %-10s │ %-12s\n", t.Icon, t.Name, detected, configured)
+	}
+
+	result += "\n"
+	result += tableRowStyle.Render("  Leyenda: ✅ Detectado  ⚙️ Instalado  ❌ No disponible")
+
+	return result
+}
+
+// showTerminalsTable muestra una tabla con los terminales (para ejecutar como acción)
 func showTerminalsTable() {
 	terminals := os.DetectTerminals()
 	supportedTerminals := os.GetSupportedTerminals()
