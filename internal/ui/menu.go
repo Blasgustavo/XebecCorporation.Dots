@@ -577,14 +577,14 @@ func (m MenuModel) View() string {
 		// Calcular ancho máximo del nombre del terminal (incluyendo icono)
 		maxNameLen := 10 // mínimo
 		for _, t := range terminals {
-			nameLen := len(t.Icon) + 1 + len(t.Name)
+			nameLen := len(t.Icon) + 3 + len(t.Name) // icono + " - " + nombre
 			if nameLen > maxNameLen {
 				maxNameLen = nameLen
 			}
 		}
 		// Limitar a un máximo razonable
-		if maxNameLen > 30 {
-			maxNameLen = 30
+		if maxNameLen > 35 {
+			maxNameLen = 35
 		}
 
 		// Anchos de columnas
@@ -645,8 +645,9 @@ func (m MenuModel) View() string {
 				configured = centerString("⚙️", colStatus)
 			}
 
-			// Nombre con icono formato "icono - nombre"
-			terminalName := fmt.Sprintf("%s - %s", t.Icon, t.Name)
+			// Nombre formateado: icono + " - " + nombre (alineado)
+			// Usamos formato que se alinee correctamente
+			terminalName := t.Icon + " - " + t.Name
 
 			// Version (por ahora N/A ya que no tenemos esa info)
 			version := centerString("N/A", colStatus)
