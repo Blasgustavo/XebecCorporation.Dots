@@ -1,3 +1,8 @@
+---
+name: skill-sync
+description: Skill para sincronizar y recargar skills en OpenCode cuando no son detectados.
+---
+
 # Skill: skill-sync
 
 # Sincronización de Skills con OpenCode

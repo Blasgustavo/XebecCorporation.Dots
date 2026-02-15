@@ -1,3 +1,8 @@
+---
+name: skill-commits
+description: Conventional Commits con Iconos para XebecCorporation.Dots
+---
+
 # Skill: skill-commits
 
 # Conventional Commits con Iconos

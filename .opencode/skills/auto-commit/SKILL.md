@@ -1,3 +1,8 @@
+---
+name: auto-commit
+description: Auto-commit y push automático después de implementar funciones en XebecCorporation.Dots.
+---
+
 # Skill: auto-commit
 
 # Auto-Commit y Push Automático
