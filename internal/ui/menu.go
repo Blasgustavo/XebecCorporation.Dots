@@ -7,12 +7,65 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/XebecCorporation/XebecCorporation.Dots/internal/os"
 )
+
+// GradientText aplica un gradiente a un texto
+func GradientText(text string, startColor, endColor string) string {
+	start := colorToRGB(startColor)
+	end := colorToRGB(endColor)
+
+	lines := strings.Split(text, "\n")
+	if len(lines) == 0 {
+		return text
+	}
+
+	var result []string
+	for i, line := range lines {
+		if line == "" {
+			result = append(result, "")
+			continue
+		}
+
+		t := float64(i) / float64(len(lines)-1)
+		if len(lines) == 1 {
+			t = 0.5
+		}
+
+		r := uint8(float64(start.r) + t*float64(end.r-start.r))
+		g := uint8(float64(start.g) + t*float64(end.g-start.g))
+		b := uint8(float64(start.b) + t*float64(end.b-start.b))
+
+		color := fmt.Sprintf("#%02x%02x%02x", r, g, b)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(color))
+		result = append(result, style.Render(line))
+	}
+
+	return strings.Join(result, "\n")
+}
+
+// RGB para gradiente
+type rgb struct {
+	r, g, b uint8
+}
+
+func colorToRGB(s string) rgb {
+	if len(s) > 0 && s[0] == '#' {
+		s = s[1:]
+	}
+	if len(s) != 6 {
+		return rgb{99, 99, 99}
+	}
+
+	var r, g, b uint8
+	fmt.Sscanf(s, "%02x%02x%02x", &r, &g, &b)
+	return rgb{r, g, b}
+}
 
 // Opción del menú
 type MenuOption struct {
@@ -114,13 +167,17 @@ func executeSelected(option MenuOption) tea.Cmd {
 
 // Renderizar la vista
 func (m MenuModel) View() string {
-	// Calcular dimensiones
 	width := m.Width
 	if width == 0 {
 		width = 80
 	}
 
-	// Usar textos del branding
+	// Ancho del contenido interno (para el marco)
+	contentWidth := width - 4
+	if contentWidth < 60 {
+		contentWidth = 60
+	}
+
 	cliLabel := BrandingConfig.Texts.CLILabel
 	platformLabel := BrandingConfig.Texts.PlatformLabel
 	menuTitle := BrandingConfig.Texts.MenuTitle
@@ -129,13 +186,16 @@ func (m MenuModel) View() string {
 
 	// Estilos
 	titleStyle := lipgloss.NewStyle().
-		Foreground(CorporateBlue).
 		Bold(true).
-		Width(width).
+		Width(contentWidth).
+		Align(lipgloss.Center)
+
+	infoStyle := lipgloss.NewStyle().
+		Width(contentWidth).
 		Align(lipgloss.Center)
 
 	optionSelectedStyle := lipgloss.NewStyle().
-		Foreground(CorporateBlue).
+		Foreground(AccentPurple).
 		Bold(true).
 		Padding(0, 2)
 
@@ -149,46 +209,56 @@ func (m MenuModel) View() string {
 
 	footerStyle := lipgloss.NewStyle().
 		Foreground(GrayLighter).
-		Width(width).
+		Width(contentWidth).
 		Align(lipgloss.Center)
 
 	separatorStyle := lipgloss.NewStyle().
 		Foreground(Gray).
-		Width(width).
+		Width(contentWidth).
 		Align(lipgloss.Center)
 
-	// Construir vista
-	s := ""
+	// Marco/borde
+	borderStyle := lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(CorporateBlue).
+		BorderBackground(GrayDark).
+		Padding(1, 2)
 
-	// Banner
-	s += titleStyle.Render(BannerASCII) + "\n"
-	s += "\n"
+	// Construir contenido interno
+	content := ""
+
+	// Banner con gradiente
+	content += titleStyle.Render(GradientText(BannerASCII, BrandingConfig.Colors.GradientStart, BrandingConfig.Colors.GradientEnd)) + "\n"
+	content += "\n"
 
 	// Info de versión y plataforma
-	s += titleStyle.Width(width-20).Render(fmt.Sprintf("%s v%s  |  %s: %s", cliLabel, m.Version, platformLabel, m.Platform)) + "\n"
-	s += separatorStyle.Render(separator) + "\n"
-	s += "\n"
+	content += infoStyle.Render(fmt.Sprintf("%s v%s  |  %s: %s", cliLabel, m.Version, platformLabel, m.Platform)) + "\n"
+	content += separatorStyle.Render(separator) + "\n"
+	content += "\n"
 
 	// Título del menú
-	s += titleStyle.Render(menuTitle) + "\n"
-	s += "\n"
+	content += titleStyle.Foreground(AccentPurple).Render(menuTitle) + "\n"
+	content += "\n"
 
 	// Opciones
 	for i, option := range m.Options {
 		if i == m.Selected {
-			s += optionSelectedStyle.Render(fmt.Sprintf("► %s %s", option.Icon, option.Title)) + "\n"
-			s += optionDescStyle.Render(option.Description) + "\n"
+			content += optionSelectedStyle.Render(fmt.Sprintf("► %s %s", option.Icon, option.Title)) + "\n"
+			content += optionDescStyle.Render(option.Description) + "\n"
 		} else {
-			s += optionUnselectedStyle.Render(fmt.Sprintf("  %s %s", option.Icon, option.Title)) + "\n"
+			content += optionUnselectedStyle.Render(fmt.Sprintf("  %s %s", option.Icon, option.Title)) + "\n"
 		}
 	}
 
-	s += "\n"
-	s += separatorStyle.Render(separator) + "\n"
-	s += "\n"
+	content += "\n"
+	content += separatorStyle.Render(separator) + "\n"
+	content += "\n"
 
 	// Footer
-	s += footerStyle.Render(footerNav)
+	content += footerStyle.Render(footerNav)
+
+	// Aplicar el marco al contenido
+	s := borderStyle.Width(contentWidth).Render(content)
 
 	return s
 }

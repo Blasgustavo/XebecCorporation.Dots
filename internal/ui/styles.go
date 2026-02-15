@@ -22,6 +22,11 @@ var (
 	AccentOrange = lipgloss.Color(BrandingConfig.Colors.AccentOrange)
 	AccentRed    = lipgloss.Color(BrandingConfig.Colors.AccentRed)
 	AccentYellow = lipgloss.Color(BrandingConfig.Colors.AccentYellow)
+	AccentPurple = lipgloss.Color(BrandingConfig.Colors.AccentPurple)
+
+	// Gradient colors
+	GradientStart = lipgloss.Color(BrandingConfig.Colors.GradientStart)
+	GradientEnd   = lipgloss.Color(BrandingConfig.Colors.GradientEnd)
 
 	// Neutral colors
 	GrayDark    = lipgloss.Color(BrandingConfig.Colors.GrayDark)

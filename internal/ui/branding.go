@@ -25,18 +25,21 @@ type Branding struct {
 }
 
 type Colors struct {
-	Primary      string `json:"primary"`
-	Secondary    string `json:"secondary"`
-	White        string `json:"white"`
-	AccentCyan   string `json:"accent_cyan"`
-	AccentGreen  string `json:"accent_green"`
-	AccentOrange string `json:"accent_orange"`
-	AccentRed    string `json:"accent_red"`
-	AccentYellow string `json:"accent_yellow"`
-	GrayDark     string `json:"gray_dark"`
-	Gray         string `json:"gray"`
-	GrayLight    string `json:"gray_light"`
-	GrayLighter  string `json:"gray_lighter"`
+	Primary       string `json:"primary"`
+	Secondary     string `json:"secondary"`
+	White         string `json:"white"`
+	AccentCyan    string `json:"accent_cyan"`
+	AccentGreen   string `json:"accent_green"`
+	AccentOrange  string `json:"accent_orange"`
+	AccentRed     string `json:"accent_red"`
+	AccentYellow  string `json:"accent_yellow"`
+	AccentPurple  string `json:"accent_purple"`
+	GradientStart string `json:"gradient_start"`
+	GradientEnd   string `json:"gradient_end"`
+	GrayDark      string `json:"gray_dark"`
+	Gray          string `json:"gray"`
+	GrayLight     string `json:"gray_light"`
+	GrayLighter   string `json:"gray_lighter"`
 }
 
 type Texts struct {
@@ -92,18 +95,21 @@ func getDefaultBranding() Branding {
 		Logo:      "XEBEC CORPORATION - CLI",
 		Separator: "═══════════════════════════════════════════════════",
 		Colors: Colors{
-			Primary:      "#00AEEF",
-			Secondary:    "#0A0A0A",
-			White:        "#FFFFFF",
-			AccentCyan:   "#00BCD4",
-			AccentGreen:  "#4CAF50",
-			AccentOrange: "#FF9800",
-			AccentRed:    "#F44336",
-			AccentYellow: "#FFEB3B",
-			GrayDark:     "#1a1a1a",
-			Gray:         "#333333",
-			GrayLight:    "#666666",
-			GrayLighter:  "#999999",
+			Primary:       "#6366F1",
+			Secondary:     "#0A0A0A",
+			White:         "#FFFFFF",
+			AccentCyan:    "#00BCD4",
+			AccentGreen:   "#4CAF50",
+			AccentOrange:  "#FF9800",
+			AccentRed:     "#F44336",
+			AccentYellow:  "#FFEB3B",
+			AccentPurple:  "#8B5CF6",
+			GradientStart: "#6366F1",
+			GradientEnd:   "#8B5CF6",
+			GrayDark:      "#1a1a1a",
+			Gray:          "#333333",
+			GrayLight:     "#666666",
+			GrayLighter:   "#999999",
 		},
 		Texts: Texts{
 			CLILabel:      "CLI",
