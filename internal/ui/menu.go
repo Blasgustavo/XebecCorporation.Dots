@@ -665,10 +665,10 @@ func (m MenuModel) View() string {
 			// El padding lo maneja automáticamente el formato %s
 			terminalName := t.Icon + " - " + t.Name
 
-			// Version (por ahora N/A ya que no tenemos esa info)
+			// Version - usar la detectada o N/A si no se pudo obtener
 			version := centerString("N/A", colStatus)
-			if t.Installed {
-				version = centerString("v1.0", colStatus) // Placeholder - luego se puede implementar detección real
+			if t.Version != "" {
+				version = centerString(t.Version, colStatus)
 			}
 
 			// Si está seleccionado - orden: #, Terminal, Version, Detectado, Configurado

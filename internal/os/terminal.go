@@ -19,6 +19,7 @@ type Terminal struct {
 	ID          string   // "alacritty", "wezterm", etc.
 	Name        string   // Nombre para mostrar
 	Icon        string   // Icono emoji
+	Version     string   // Versión del terminal
 	Installed   bool     // Si está instalado
 	ConfigPath  string   // Ruta de configuración principal
 	ConfigPaths []string // Rutas alternativas de configuración
@@ -27,273 +28,310 @@ type Terminal struct {
 
 // Lista completa de terminales a detectar
 var terminalList = []struct {
-	id       string
-	name     string
-	icon     string
-	commands []string        // Comandos ejecutables a buscar
-	paths    []string        // Rutas de ejecutables alternativas
-	configs  []func() string // Funciones que retornan rutas de config
+	id         string
+	name       string
+	icon       string
+	commands   []string        // Comandos ejecutables a buscar
+	paths      []string        // Rutas de ejecutables alternativas
+	configs    []func() string // Funciones que retornan rutas de config
+	versionCmd string          // Comando para obtener versión
 }{
 	// Terminales modernos populares
 	{
-		id:       "alacritty",
-		name:     "Alacritty",
-		icon:     "🖥️",
-		commands: []string{"alacritty"},
-		configs:  []func() string{alacrittyConfig},
+		id:         "alacritty",
+		name:       "Alacritty",
+		icon:       "🖥️",
+		commands:   []string{"alacritty"},
+		configs:    []func() string{alacrittyConfig},
+		versionCmd: "alacritty --version",
 	},
 	{
-		id:       "wezterm",
-		name:     "WezTerm",
-		icon:     "🔥",
-		commands: []string{"wezterm"},
-		configs:  []func() string{weztermConfig},
+		id:         "wezterm",
+		name:       "WezTerm",
+		icon:       "🔥",
+		commands:   []string{"wezterm"},
+		configs:    []func() string{weztermConfig},
+		versionCmd: "wezterm --version",
 	},
 	{
-		id:       "kitty",
-		name:     "Kitty",
-		icon:     "🐱",
-		commands: []string{"kitty"},
-		configs:  []func() string{kittyConfig},
+		id:         "kitty",
+		name:       "Kitty",
+		icon:       "🐱",
+		commands:   []string{"kitty"},
+		configs:    []func() string{kittyConfig},
+		versionCmd: "kitty --version",
 	},
 	{
-		id:       "ghostty",
-		name:     "Ghostty",
-		icon:     "👻",
-		commands: []string{"ghostty"},
-		configs:  []func() string{ghosttyConfig},
+		id:         "ghostty",
+		name:       "Ghostty",
+		icon:       "👻",
+		commands:   []string{"ghostty"},
+		configs:    []func() string{ghosttyConfig},
+		versionCmd: "ghostty --version",
 	},
 	{
-		id:       "windows-terminal",
-		name:     "Windows Terminal",
-		icon:     "🪟",
-		commands: []string{"wt", "wt.exe"},
-		configs:  []func() string{windowsTerminalConfig},
+		id:         "windows-terminal",
+		name:       "Windows Terminal",
+		icon:       "🪟",
+		commands:   []string{"wt", "wt.exe"},
+		configs:    []func() string{windowsTerminalConfig},
+		versionCmd: "wt --version",
 	},
 	{
-		id:       "hyper",
-		name:     "Hyper",
-		icon:     "⚡",
-		commands: []string{"hyper"},
-		configs:  []func() string{hyperConfig},
+		id:         "hyper",
+		name:       "Hyper",
+		icon:       "⚡",
+		commands:   []string{"hyper"},
+		configs:    []func() string{hyperConfig},
+		versionCmd: "hyper --version",
 	},
 	{
-		id:       "tabby",
-		name:     "Tabby",
-		icon:     "📋",
-		commands: []string{"tabby"},
-		configs:  []func() string{tabbyConfig},
+		id:         "tabby",
+		name:       "Tabby",
+		icon:       "📋",
+		commands:   []string{"tabby"},
+		configs:    []func() string{tabbyConfig},
+		versionCmd: "tabby --version",
 	},
 	{
-		id:       "windterm",
-		name:     "WindTerm",
-		icon:     "💨",
-		commands: []string{"WindTerm"},
-		configs:  []func() string{windtermConfig},
+		id:         "windterm",
+		name:       "WindTerm",
+		icon:       "💨",
+		commands:   []string{"WindTerm"},
+		configs:    []func() string{windtermConfig},
+		versionCmd: "windterm --version",
 	},
 	{
-		id:       "electerm",
-		name:     "Electerm",
-		icon:     "🔌",
-		commands: []string{"electerm"},
-		configs:  []func() string{electermConfig},
+		id:         "electerm",
+		name:       "Electerm",
+		icon:       "🔌",
+		commands:   []string{"electerm"},
+		configs:    []func() string{electermConfig},
+		versionCmd: "electerm --version",
 	},
 
 	// Terminales Linux populares
 	{
-		id:       "gnome-terminal",
-		name:     "GNOME Terminal",
-		icon:     "🐧",
-		commands: []string{"gnome-terminal", "gnome-terminal-server"},
-		configs:  []func() string{gnomeTerminalConfig},
+		id:         "gnome-terminal",
+		name:       "GNOME Terminal",
+		icon:       "🐧",
+		commands:   []string{"gnome-terminal", "gnome-terminal-server"},
+		configs:    []func() string{gnomeTerminalConfig},
+		versionCmd: "gnome-terminal --version",
 	},
 	{
-		id:       "konsole",
-		name:     "Konsole",
-		icon:     "🎮",
-		commands: []string{"konsole"},
-		configs:  []func() string{konsoleConfig},
+		id:         "konsole",
+		name:       "Konsole",
+		icon:       "🎮",
+		commands:   []string{"konsole"},
+		configs:    []func() string{konsoleConfig},
+		versionCmd: "konsole --version",
 	},
 	{
-		id:       "terminator",
-		name:     "Terminator",
-		icon:     "🔱",
-		commands: []string{"terminator"},
-		configs:  []func() string{terminatorConfig},
+		id:         "terminator",
+		name:       "Terminator",
+		icon:       "🔱",
+		commands:   []string{"terminator"},
+		configs:    []func() string{terminatorConfig},
+		versionCmd: "terminator --version",
 	},
 	{
-		id:       "tilix",
-		name:     "Tilix",
-		icon:     "📦",
-		commands: []string{"tilix", "tilix.dcc"},
-		configs:  []func() string{tilixConfig},
+		id:         "tilix",
+		name:       "Tilix",
+		icon:       "📦",
+		commands:   []string{"tilix", "tilix.dcc"},
+		configs:    []func() string{tilixConfig},
+		versionCmd: "tilix --version",
 	},
 	{
-		id:       "guake",
-		name:     "Guake",
-		icon:     "⬇️",
-		commands: []string{"guake"},
-		configs:  []func() string{guakeConfig},
+		id:         "guake",
+		name:       "Guake",
+		icon:       "⬇️",
+		commands:   []string{"guake"},
+		configs:    []func() string{guakeConfig},
+		versionCmd: "guake --version",
 	},
 	{
-		id:       "yakuake",
-		name:     "Yakuake",
-		icon:     "⬆️",
-		commands: []string{"yakuake"},
-		configs:  []func() string{yakuakeConfig},
+		id:         "yakuake",
+		name:       "Yakuake",
+		icon:       "⬆️",
+		commands:   []string{"yakuake"},
+		configs:    []func() string{yakuakeConfig},
+		versionCmd: "yakuake --version",
 	},
 	{
-		id:       "xfce4-terminal",
-		name:     "XFCE Terminal",
-		icon:     "🐆",
-		commands: []string{"xfce4-terminal"},
-		configs:  []func() string{xfce4TerminalConfig},
+		id:         "xfce4-terminal",
+		name:       "XFCE Terminal",
+		icon:       "🐆",
+		commands:   []string{"xfce4-terminal"},
+		configs:    []func() string{xfce4TerminalConfig},
+		versionCmd: "xfce4-terminal --version",
 	},
 	{
-		id:       "lxterminal",
-		name:     "LXTerminal",
-		icon:     "🪶",
-		commands: []string{"lxterminal"},
-		configs:  []func() string{lxterminalConfig},
+		id:         "lxterminal",
+		name:       "LXTerminal",
+		icon:       "🪶",
+		commands:   []string{"lxterminal"},
+		configs:    []func() string{lxterminalConfig},
+		versionCmd: "lxterminal --version",
 	},
 	{
-		id:       "qterminal",
-		name:     "QTerminal",
-		icon:     "🟢",
-		commands: []string{"qterminal"},
-		configs:  []func() string{qterminalConfig},
+		id:         "qterminal",
+		name:       "QTerminal",
+		icon:       "🟢",
+		commands:   []string{"qterminal"},
+		configs:    []func() string{qterminalConfig},
+		versionCmd: "qterminal --version",
 	},
 	{
-		id:       "lilyterm",
-		name:     "LilyTerm",
-		icon:     "🌸",
-		commands: []string{"lilyterm"},
-		configs:  []func() string{lilytermConfig},
+		id:         "lilyterm",
+		name:       "LilyTerm",
+		icon:       "🌸",
+		commands:   []string{"lilyterm"},
+		configs:    []func() string{lilytermConfig},
+		versionCmd: "lilyterm --version",
 	},
 	{
-		id:       "sakura",
-		name:     "Sakura",
-		icon:     "🌸",
-		commands: []string{"sakura"},
-		configs:  []func() string{sakuraConfig},
+		id:         "sakura",
+		name:       "Sakura",
+		icon:       "🌸",
+		commands:   []string{"sakura"},
+		configs:    []func() string{sakuraConfig},
+		versionCmd: "sakura --version",
 	},
 	{
-		id:       "st",
-		name:     "st (Simple Terminal)",
-		icon:     "📟",
-		commands: []string{"st"},
-		configs:  []func() string{stConfig},
+		id:         "st",
+		name:       "st (Simple Terminal)",
+		icon:       "📟",
+		commands:   []string{"st"},
+		configs:    []func() string{stConfig},
+		versionCmd: "st --version",
 	},
 	{
-		id:       "foot",
-		name:     "foot",
-		icon:     "🦶",
-		commands: []string{"foot"},
-		configs:  []func() string{footConfig},
+		id:         "foot",
+		name:       "foot",
+		icon:       "🦶",
+		commands:   []string{"foot"},
+		configs:    []func() string{footConfig},
+		versionCmd: "foot --version",
 	},
 	{
-		id:       "rio",
-		name:     "Rio Terminal",
-		icon:     "🌊",
-		commands: []string{"rio"},
-		configs:  []func() string{rioConfig},
+		id:         "rio",
+		name:       "Rio Terminal",
+		icon:       "🌊",
+		commands:   []string{"rio"},
+		configs:    []func() string{rioConfig},
+		versionCmd: "rio --version",
 	},
 
 	// Terminales clásicos
 	{
-		id:       "xterm",
-		name:     "XTerm",
-		icon:     "❎",
-		commands: []string{"xterm"},
-		configs:  []func() string{xtermConfig},
+		id:         "xterm",
+		name:       "XTerm",
+		icon:       "❎",
+		commands:   []string{"xterm"},
+		configs:    []func() string{xtermConfig},
+		versionCmd: "xterm -version",
 	},
 	{
-		id:       "urxvt",
-		name:     "URxvt / Rxvt-unicode",
-		icon:     "📻",
-		commands: []string{"urxvt", "rxvt-unicode", "urxvt256c-ml", "urxvtc"},
-		configs:  []func() string{urxvtConfig},
+		id:         "urxvt",
+		name:       "URxvt / Rxvt-unicode",
+		icon:       "📻",
+		commands:   []string{"urxvt", "rxvt-unicode", "urxvt256c-ml", "urxvtc"},
+		configs:    []func() string{urxvtConfig},
+		versionCmd: "urxvt --version",
 	},
 	{
-		id:       "eterm",
-		name:     "Eterm",
-		icon:     "🟣",
-		commands: []string{"Eterm"},
-		configs:  []func() string{etermConfig},
+		id:         "eterm",
+		name:       "Eterm",
+		icon:       "🟣",
+		commands:   []string{"Eterm"},
+		configs:    []func() string{etermConfig},
+		versionCmd: "Eterm --version",
 	},
 	{
-		id:       "mlterm",
-		name:     "MLTerm",
-		icon:     "📺",
-		commands: []string{"mlterm"},
-		configs:  []func() string{mltermConfig},
+		id:         "mlterm",
+		name:       "MLTerm",
+		icon:       "📺",
+		commands:   []string{"mlterm"},
+		configs:    []func() string{mltermConfig},
+		versionCmd: "mlterm --version",
 	},
 
 	// Terminales macOS
 	{
-		id:       "iterm2",
-		name:     "iTerm2",
-		icon:     "💻",
-		commands: []string{"iTerm2"},
-		configs:  []func() string{iterm2Config},
+		id:         "iterm2",
+		name:       "iTerm2",
+		icon:       "💻",
+		commands:   []string{"iTerm2"},
+		configs:    []func() string{iterm2Config},
+		versionCmd: "iTerm2 --version",
 	},
 	{
-		id:       "terminal",
-		name:     "Terminal.app",
-		icon:     "🖥️",
-		commands: []string{"Terminal"},
-		configs:  []func() string{terminalAppConfig},
+		id:         "terminal",
+		name:       "Terminal.app",
+		icon:       "🖥️",
+		commands:   []string{"Terminal"},
+		configs:    []func() string{terminalAppConfig},
+		versionCmd: "osascript -e 'version of app \"Terminal\"'",
 	},
 	{
-		id:       "alacritty",
-		name:     "Alacritty (macOS)",
-		icon:     "🖥️",
-		commands: []string{"alacritty"},
-		configs:  []func() string{alacrittyConfig},
+		id:         "alacritty",
+		name:       "Alacritty (macOS)",
+		icon:       "🖥️",
+		commands:   []string{"alacritty"},
+		configs:    []func() string{alacrittyConfig},
+		versionCmd: "alacritty --version",
 	},
 	{
-		id:       "hyper",
-		name:     "Hyper (macOS)",
-		icon:     "⚡",
-		commands: []string{"hyper"},
-		configs:  []func() string{hyperConfig},
+		id:         "hyper",
+		name:       "Hyper (macOS)",
+		icon:       "⚡",
+		commands:   []string{"hyper"},
+		configs:    []func() string{hyperConfig},
+		versionCmd: "hyper --version",
 	},
 
 	// Terminales adicionales Windows
 	{
-		id:       "terminus",
-		name:     "Terminus",
-		icon:     "🏁",
-		commands: []string{"terminus"},
-		configs:  []func() string{terminusConfig},
+		id:         "terminus",
+		name:       "Terminus",
+		icon:       "🏁",
+		commands:   []string{"terminus"},
+		configs:    []func() string{terminusConfig},
+		versionCmd: "terminus --version",
 	},
 	{
-		id:       "conemu",
-		name:     "ConEmu",
-		icon:     "⬛",
-		commands: []string{"ConEmu", "ConEmu64"},
-		configs:  []func() string{conemuConfig},
+		id:         "conemu",
+		name:       "ConEmu",
+		icon:       "⬛",
+		commands:   []string{"ConEmu", "ConEmu64"},
+		configs:    []func() string{conemuConfig},
+		versionCmd: "ConEmu -Version",
 	},
 	{
-		id:       "cmder",
-		name:     "Cmder",
-		icon:     "📦",
-		commands: []string{"cmder"},
-		configs:  []func() string{cmderConfig},
+		id:         "cmder",
+		name:       "Cmder",
+		icon:       "📦",
+		commands:   []string{"cmder"},
+		configs:    []func() string{cmderConfig},
+		versionCmd: "cmder --version",
 	},
 	{
-		id:       "fterminal",
-		name:     "Fluent Terminal",
-		icon:     "🌊",
-		commands: []string{"FluentTerminal"},
-		configs:  []func() string{fluentTerminalConfig},
+		id:         "fterminal",
+		name:       "Fluent Terminal",
+		icon:       "🌊",
+		commands:   []string{"FluentTerminal"},
+		configs:    []func() string{fluentTerminalConfig},
+		versionCmd: "FluentTerminal --version",
 	},
 	{
-		id:       "terminal-buddy",
-		name:     "Terminal Buddy",
-		icon:     "👥",
-		commands: []string{"TerminalBuddy"},
-		configs:  []func() string{terminalBuddyConfig},
+		id:         "terminal-buddy",
+		name:       "Terminal Buddy",
+		icon:       "👥",
+		commands:   []string{"TerminalBuddy"},
+		configs:    []func() string{terminalBuddyConfig},
+		versionCmd: "TerminalBuddy --version",
 	},
 }
 
@@ -303,7 +341,7 @@ func DetectTerminals() []Terminal {
 
 	// Usar la lista completa de terminales
 	for _, t := range terminalList {
-		terminal := detectTerminalByCommands(t.id, t.name, t.icon, t.commands, t.configs)
+		terminal := detectTerminalByCommands(t.id, t.name, t.icon, t.commands, t.configs, t.versionCmd)
 		if terminal.Installed {
 			terminals = append(terminals, terminal)
 		}
@@ -323,7 +361,7 @@ func DetectTerminals() []Terminal {
 }
 
 // Función genérica para detectar terminales por comandos
-func detectTerminalByCommands(id, name, icon string, commands []string, configFuncs []func() string) Terminal {
+func detectTerminalByCommands(id, name, icon string, commands []string, configFuncs []func() string, versionCmd string) Terminal {
 	t := Terminal{
 		ID:   id,
 		Name: name,
@@ -344,6 +382,11 @@ func detectTerminalByCommands(id, name, icon string, commands []string, configFu
 		t.Installed = searchInCommonPaths(commands)
 	}
 
+	// Si está instalado, detectar versión
+	if t.Installed && versionCmd != "" {
+		t.Version = getTerminalVersion(versionCmd)
+	}
+
 	// Buscar configuración
 	for _, configFunc := range configFuncs {
 		configPath := configFunc()
@@ -359,6 +402,37 @@ func detectTerminalByCommands(id, name, icon string, commands []string, configFu
 	}
 
 	return t
+}
+
+// getTerminalVersion ejecuta el comando de versión y parsea el resultado
+func getTerminalVersion(versionCmd string) string {
+	// Usar shell según la plataforma
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/C", versionCmd)
+	} else {
+		cmd = exec.Command("sh", "-c", versionCmd)
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		return "N/A"
+	}
+
+	// Limpiar el output - quitar espacios y líneas extra
+	version := strings.TrimSpace(string(output))
+
+	// Si hay múltiples líneas, tomar solo la primera
+	if strings.Contains(version, "\n") {
+		version = strings.Split(version, "\n")[0]
+	}
+
+	// Truncar si es muy largo
+	if len(version) > 20 {
+		version = version[:20]
+	}
+
+	return version
 }
 
 // Buscar en rutas comunes de instalación
