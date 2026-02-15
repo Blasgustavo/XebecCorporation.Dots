@@ -509,13 +509,38 @@ func (m MenuModel) View() string {
 			Foreground(AccentPurple).
 			Bold(true)
 
-		// Estilo simple de tabla
+		// Calcular ancho máximo del nombre del terminal (incluyendo icono)
+		maxNameLen := 10 // mínimo
+		for _, t := range terminals {
+			nameLen := len(t.Icon) + 1 + len(t.Name)
+			if nameLen > maxNameLen {
+				maxNameLen = nameLen
+			}
+		}
+		// Limitar a un máximo razonable
+		if maxNameLen > 30 {
+			maxNameLen = 30
+		}
+
+		// Anchos de columnas
+		colNum := 3           // para número
+		colName := maxNameLen // para terminal
+		colStatus := 10       // para detectado/configurado
+
+		// Construir formato de borde dinámico
+		borderTop := "╭" + strings.Repeat("─", colNum+2) + "┬" + strings.Repeat("─", colName+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "╮"
+		borderMid := "├" + strings.Repeat("─", colNum+2) + "┼" + strings.Repeat("─", colName+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┤"
+		borderBot := "╰" + strings.Repeat("─", colNum+2) + "┴" + strings.Repeat("─", colName+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "╯"
+
+		// Formato de filas
+		headerFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "s │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
+		rowFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "d │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
+
 		content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
 		content += "\n"
-
-		// Encabezados con espacios
-		content += tableStyle.Render("  #   Terminal                     Detectado    Configurado") + "\n"
-		content += tableStyle.Render("  --- ---------------------------- -----------  ------------") + "\n"
+		content += tableStyle.Render(borderTop) + "\n"
+		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Detectado", "Configurado")) + "\n"
+		content += tableStyle.Render(borderMid) + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
 		maxVisible := 5
@@ -560,15 +585,15 @@ func (m MenuModel) View() string {
 
 			// Si está seleccionado
 			if m.Selected == i {
-				row := fmt.Sprintf("  %d > %-27s %-11s %-12s", i+1, terminalName, detected, configured)
+				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, detected, configured)
 				content += selectedStyle.Render(row) + "\n"
 			} else {
-				row := fmt.Sprintf("  %d   %-27s %-11s %-12s", i+1, terminalName, detected, configured)
+				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, detected, configured)
 				content += tableStyle.Render(row) + "\n"
 			}
 		}
 
-		content += "\n"
+		content += tableStyle.Render(borderBot) + "\n"
 
 		// Botones de acción al final
 		content += "\n" + titleStyle.Render("Acciones") + "\n"
