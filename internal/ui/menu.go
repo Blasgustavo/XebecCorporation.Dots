@@ -509,16 +509,13 @@ func (m MenuModel) View() string {
 			Foreground(AccentPurple).
 			Bold(true)
 
-		// Bordes de tabla tipo Nushell
-		topBorder := "╭────┬─────────────────────────────┬────────────┬──────────────╮"
-		midBorder := "�────┼─────────────────────────────┼────────────┼──────────────╤"
-		botBorder := "╰────┴─────────────────────────────┴────────────┴──────────────╯"
-
+		// Estilo simple de tabla
 		content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
 		content += "\n"
-		content += tableStyle.Render(topBorder) + "\n"
-		content += tableStyle.Render("│    │ Terminal                      │ Detectado  │ Configurado  │") + "\n"
-		content += tableStyle.Render(midBorder) + "\n"
+
+		// Encabezados con espacios
+		content += tableStyle.Render("  #   Terminal                     Detectado    Configurado") + "\n"
+		content += tableStyle.Render("  --- ---------------------------- -----------  ------------") + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
 		maxVisible := 5
@@ -563,15 +560,13 @@ func (m MenuModel) View() string {
 
 			// Si está seleccionado
 			if m.Selected == i {
-				row := fmt.Sprintf("│ ▶ │ %-25s │ %-10s │ %-12s│", terminalName, detected, configured)
+				row := fmt.Sprintf("  %d > %-27s %-11s %-12s", i+1, terminalName, detected, configured)
 				content += selectedStyle.Render(row) + "\n"
 			} else {
-				row := fmt.Sprintf("│   │ %-25s │ %-10s │ %-12s│", terminalName, detected, configured)
+				row := fmt.Sprintf("  %d   %-27s %-11s %-12s", i+1, terminalName, detected, configured)
 				content += tableStyle.Render(row) + "\n"
 			}
 		}
-
-		content += tableStyle.Render(botBorder) + "\n"
 
 		content += "\n"
 
