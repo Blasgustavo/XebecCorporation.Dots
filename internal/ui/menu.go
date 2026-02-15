@@ -92,6 +92,17 @@ func colorToRGB(s string) rgb {
 	return rgb{r, g, b}
 }
 
+// centerString centra un string en un ancho dado
+func centerString(s string, width int) string {
+	sLen := len(s)
+	if sLen >= width {
+		return s
+	}
+	left := (width - sLen) / 2
+	right := width - sLen - left
+	return strings.Repeat(" ", left) + s + strings.Repeat(" ", right)
+}
+
 // ============================================
 // Estructuras del menú
 // ============================================
@@ -566,18 +577,18 @@ func (m MenuModel) View() string {
 		for i := offset; i < endIdx; i++ {
 			t := terminals[i]
 
-			// Detectado
-			detected := "❌"
+			// Detectado (centrado)
+			detected := centerString("❌", colStatus)
 			if t.Installed {
-				detected = "✅"
+				detected = centerString("✅", colStatus)
 			}
 
-			// Configurado
-			configured := "❌"
+			// Configurado (centrado)
+			configured := centerString("❌", colStatus)
 			if t.Exists {
-				configured = "✅"
+				configured = centerString("✅", colStatus)
 			} else if t.Installed {
-				configured = "⚙️"
+				configured = centerString("⚙️", colStatus)
 			}
 
 			// Nombre con icono
