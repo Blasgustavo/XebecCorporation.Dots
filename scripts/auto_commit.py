@@ -66,7 +66,7 @@ def commit(message=None):
     # Verificar si hay cambios
     changes = get_git_changes()
     if not changes:
-        print("No hay cambios para commitear")
+        print("[INFO] No hay cambios para commitear")
         return False
     
     # Si no hay mensaje, detectar tipo
@@ -91,10 +91,10 @@ def commit(message=None):
             capture_output=True,
             text=True
         )
-        print(f"✅ Commit realizado: {result.stdout.strip()}")
+        print(f"[OK] Commit: {result.stdout.strip()}")
         return True
     else:
-        print(f"❌ Error: {result.stderr}")
+        print(f"[ERROR] {result.stderr}")
         return False
 
 def main():
