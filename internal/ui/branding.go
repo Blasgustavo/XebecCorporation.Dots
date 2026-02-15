@@ -62,6 +62,7 @@ type MenuOptionBranding struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Submenu     bool   `json:"submenu"`
+	Type        string `json:"type"` // "table", "action", etc.
 }
 
 // Variable global con el branding cargado

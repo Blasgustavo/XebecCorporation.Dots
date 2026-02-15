@@ -102,6 +102,7 @@ type MenuOption struct {
 	IsBack      bool
 	IsExit      bool
 	ParentID    string
+	OptionType  string // "table", "action", etc.
 }
 
 // MenuLevel representa un nivel en el historial de navegación
@@ -168,6 +169,7 @@ func getMenuOptionsFromBranding() []MenuOption {
 			Description: opt.Description,
 			IsBack:      opt.ID == "back",
 			IsExit:      opt.ID == "exit",
+			OptionType:  opt.Type,
 		}
 	}
 
@@ -190,6 +192,7 @@ func getSubmenuOptions(parentID string) []MenuOption {
 			Description: opt.Description,
 			IsBack:      opt.ID == "back",
 			ParentID:    parentID,
+			OptionType:  opt.Type,
 		}
 	}
 
@@ -457,6 +460,11 @@ func executeMenuAction(optionID string) {
 	fmt.Println()
 
 	switch optionID {
+	case "terminal_list":
+		showTerminalsTable()
+	case "terminal_refresh":
+		fmt.Println(SuccessStyle.Render("🔄 Detectando terminales..."))
+		showTerminalsTable()
 	case "terminal_alacritty":
 		fmt.Println(SuccessStyle.Render("⚡ Configurando Alacritty..."))
 		configureAlacritty()
@@ -499,6 +507,8 @@ func executeMenuAction(optionID string) {
 
 func getMenuActionTitle(id string) string {
 	titles := map[string]string{
+		"terminal_list":      "Ver Terminales",
+		"terminal_refresh":   "Refrescar",
 		"terminal_alacritty": "Alacritty",
 		"terminal_wezterm":   "WezTerm",
 		"terminal_kitty":     "Kitty",
@@ -525,6 +535,8 @@ func getMenuActionTitle(id string) string {
 
 func getMenuActionDescription(id string) string {
 	descriptions := map[string]string{
+		"terminal_list":      "Mostrar tabla de terminales",
+		"terminal_refresh":   "Refrescar detección de terminales",
 		"terminal_alacritty": "Aplicando configuración de Alacritty",
 		"terminal_wezterm":   "Aplicando configuración de WezTerm",
 		"terminal_kitty":     "Aplicando configuración de Kitty",
@@ -547,6 +559,47 @@ func getMenuActionDescription(id string) string {
 		return desc
 	}
 	return ""
+}
+
+// showTerminalsTable muestra una tabla con los terminales
+func showTerminalsTable() {
+	terminals := os.DetectTerminals()
+	supportedTerminals := os.GetSupportedTerminals()
+
+	// Crear mapa de soportados
+	supportedMap := make(map[string]bool)
+	for _, t := range supportedTerminals {
+		supportedMap[t] = true
+	}
+
+	// Encabezados de la tabla
+	fmt.Println()
+	fmt.Println(TitleStyle.Render("📋 Terminales Detectados"))
+	fmt.Println()
+	fmt.Printf("  %-20s │ %-10s │ %-12s\n", "Terminal", "Soporte", "Configurado")
+	fmt.Printf("  %s\n", strings.Repeat("─", 52))
+
+	for _, t := range terminals {
+		// Soporte: ✓ si tenemos config disponible
+		hasSupport := supportedMap[t.ID]
+		support := "❌"
+		if hasSupport {
+			support = "✅"
+		}
+
+		// Configurado: ✓ si ya está configurado
+		configured := "❌"
+		if t.Exists {
+			configured = "✅"
+		} else if t.Installed {
+			configured = "⚙️"
+		}
+
+		fmt.Printf("  %s %-17s │ %-10s │ %-12s\n", t.Icon, t.Name, support, configured)
+	}
+
+	fmt.Println()
+	fmt.Println(MutedTextStyle.Render("  Leyenda: ✅ Disponible  ⚙️ Instalado  ❌ No disponible"))
 }
 
 // Mostrar estado del sistema

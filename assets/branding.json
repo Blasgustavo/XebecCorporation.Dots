@@ -82,28 +82,17 @@
   "submenus": {
     "terminal": [
       {
-        "id": "terminal_alacritty",
-        "icon": "⚡",
-        "title": "Alacritty",
-        "description": "Configurar Alacritty"
+        "id": "terminal_list",
+        "icon": "📋",
+        "title": "Ver Terminales",
+        "description": "Mostrar tabla de terminales disponibles",
+        "type": "table"
       },
       {
-        "id": "terminal_wezterm",
-        "icon": "🔥",
-        "title": "WezTerm",
-        "description": "Configurar WezTerm"
-      },
-      {
-        "id": "terminal_kitty",
-        "icon": "🐱",
-        "title": "Kitty",
-        "description": "Configurar Kitty"
-      },
-      {
-        "id": "terminal_windows",
-        "icon": "🪟",
-        "title": "Windows Terminal",
-        "description": "Configurar Windows Terminal"
+        "id": "terminal_refresh",
+        "icon": "🔄",
+        "title": "Refrescar",
+        "description": "Detectar terminales instalados"
       },
       {
         "id": "back",
