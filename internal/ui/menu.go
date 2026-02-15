@@ -37,6 +37,16 @@ type ExecuteActionMsg struct {
 // RefreshTerminalsMsg mensaje para refrescar los terminales detectados
 type RefreshTerminalsMsg struct{}
 
+// RefreshTerminalsWithDataMsg mensaje para actualizar terminales con datos
+type RefreshTerminalsWithDataMsg struct {
+	Terminals []os.Terminal
+}
+
+// LoadingMsg mensaje para estado de carga
+type LoadingMsg struct {
+	IsLoading bool
+}
+
 // ============================================
 // Funciones de gradiente
 // ============================================
@@ -137,6 +147,8 @@ type MenuModel struct {
 	Width           int
 	Height          int
 	CachedTerminals []os.Terminal // Cache de terminales detectados
+	IsLoading       bool          // Estado de carga
+	LoadingMessage  string        // Mensaje de carga
 }
 
 // NewMenuModel crea un nuevo modelo de menú
@@ -299,6 +311,21 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case RefreshTerminalsMsg:
 		m.CachedTerminals = os.DetectTerminals()
+		m.IsLoading = false
+		m.LoadingMessage = ""
+
+	case RefreshTerminalsWithDataMsg:
+		m.CachedTerminals = msg.Terminals
+		m.IsLoading = false
+		m.LoadingMessage = "Actualizado!"
+
+	case LoadingMsg:
+		m.IsLoading = msg.IsLoading
+		if msg.IsLoading {
+			m.LoadingMessage = "Actualizando..."
+		} else {
+			m.LoadingMessage = ""
+		}
 	}
 	return m, nil
 }
@@ -351,13 +378,16 @@ func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
 
 		// Selected == terminalCount → Actualizar
 		if m.Selected == terminalCount {
-			// Refrescar cache y mostrar mensaje
+			// Iniciar ciclo de loading
+			m.IsLoading = true
+			m.LoadingMessage = "Actualizando terminales..."
+
+			// Retornar comando para ejecutar la actualización
 			return *m, func() tea.Msg {
-				m.CachedTerminals = os.DetectTerminals()
-				showTerminalsTable()
-				fmt.Println()
-				fmt.Println(SuccessStyle.Render("Terminales actualizados"))
-				return RefreshTerminalsMsg{}
+				// Pequeña pausa para mostrar el loading
+				// Luego actualizar
+				terminals := os.DetectTerminals()
+				return RefreshTerminalsWithDataMsg{Terminals: terminals}
 			}
 		}
 
@@ -519,6 +549,30 @@ func (m MenuModel) View() string {
 		selectedStyle := lipgloss.NewStyle().
 			Foreground(AccentPurple).
 			Bold(true)
+
+		// Si está cargando, mostrar mensaje de loading
+		if m.IsLoading {
+			content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
+			content += "\n"
+			content += "\n"
+			content += "\n"
+			content += titleStyle.Render("🔄 "+m.LoadingMessage) + "\n"
+			content += "\n"
+			content += "\n"
+			content += "\n"
+			content += "\n"
+			content += "\n"
+			content += separatorStyle.Render("Presiona cualquier tecla para continuar...") + "\n"
+
+			s := borderStyle.Width(contentWidth).Render(content)
+			return s
+		}
+
+		// Si hay mensaje de completado, mostrarlo brevemente
+		if m.LoadingMessage != "" && !m.IsLoading {
+			content += SuccessStyle.Render("✓ "+m.LoadingMessage) + "\n"
+			content += "\n"
+		}
 
 		// Calcular ancho máximo del nombre del terminal (incluyendo icono)
 		maxNameLen := 10 // mínimo
