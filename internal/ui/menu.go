@@ -603,24 +603,24 @@ func (m MenuModel) View() string {
 			maxNameLen = 35
 		}
 
-		// Anchos de columnas
+		// Anchos de columnas (4 columnas: #, Terminal, Detectado, Configurado)
 		colNum := 3           // para número
 		colName := maxNameLen // para terminal
-		colStatus := 10       // para detectado/configurado/version
+		colStatus := 12       // para detectado/configurado
 
-		// Construir bordes dinámicos para 5 columnas
-		borderTop := "╭" + strings.Repeat("─", colNum+2) + "┬" + strings.Repeat("─", colName+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "╮"
-		borderMid := "├" + strings.Repeat("─", colNum+2) + "┼" + strings.Repeat("─", colName+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┤"
-		borderBot := "╰" + strings.Repeat("─", colNum+2) + "┴" + strings.Repeat("─", colName+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "╯"
+		// Construir bordes dinámicos para 4 columnas
+		borderTop := "╭" + strings.Repeat("─", colNum+2) + "┬" + strings.Repeat("─", colName+2) + "┬" + strings.Repeat("─", colStatus+2) + "┬" + strings.Repeat("─", colStatus+2) + "╮"
+		borderMid := "├" + strings.Repeat("─", colNum+2) + "┼" + strings.Repeat("─", colName+2) + "┼" + strings.Repeat("─", colStatus+2) + "┼" + strings.Repeat("─", colStatus+2) + "┤"
+		borderBot := "╰" + strings.Repeat("─", colNum+2) + "┴" + strings.Repeat("─", colName+2) + "┴" + strings.Repeat("─", colStatus+2) + "┴" + strings.Repeat("─", colStatus+2) + "╯"
 
-		// Formato de filas (5 columnas)
-		headerFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "s │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
-		rowFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "d │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
+		// Formato de filas (4 columnas)
+		headerFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "s │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
+		rowFmt := "│ %-" + fmt.Sprintf("%d", colNum) + "d │ %-" + fmt.Sprintf("%d", colName) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │ %-" + fmt.Sprintf("%d", colStatus) + "s │"
 
 		content += titleStyle.Foreground(AccentPurple).Render("Terminales Detectados") + "\n"
 		content += "\n"
 		content += tableStyle.Render(borderTop) + "\n"
-		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Version", "Detectado", "Configurado")) + "\n"
+		content += tableStyle.Render(fmt.Sprintf(headerFmt, "#", "Terminal", "Detectado", "Configurado")) + "\n"
 		content += tableStyle.Render(borderMid) + "\n"
 
 		// Calcular offset para scroll si hay muchos terminales
@@ -662,21 +662,14 @@ func (m MenuModel) View() string {
 			}
 
 			// Nombre formateado: icono + " - " + nombre
-			// El padding lo maneja automáticamente el formato %s
 			terminalName := t.Icon + " - " + t.Name
 
-			// Version - usar la detectada o N/A si no se pudo obtener
-			version := centerString("N/A", colStatus)
-			if t.Version != "" {
-				version = centerString(t.Version, colStatus)
-			}
-
-			// Si está seleccionado - orden: #, Terminal, Version, Detectado, Configurado
+			// Si está seleccionado - orden: #, Terminal, Detectado, Configurado
 			if m.Selected == i {
-				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, version, detected, configured)
+				row := fmt.Sprintf(rowFmt, i+1, "▶ "+terminalName, detected, configured)
 				content += selectedStyle.Render(row) + "\n"
 			} else {
-				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, version, detected, configured)
+				row := fmt.Sprintf(rowFmt, i+1, "  "+terminalName, detected, configured)
 				content += tableStyle.Render(row) + "\n"
 			}
 		}
