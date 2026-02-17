@@ -82,6 +82,34 @@
   "submenus": {
     "terminal": [
       {
+        "id": "terminal_alacritty",
+        "icon": "🖥️",
+        "title": "Configurar Alacritty",
+        "description": "Aplicar tema XEBEC a Alacritty",
+        "type": "checkbox"
+      },
+      {
+        "id": "terminal_wezterm",
+        "icon": "🔥",
+        "title": "WezTerm",
+        "description": "En fase de implementación",
+        "type": "coming_soon"
+      },
+      {
+        "id": "terminal_kitty",
+        "icon": "🐱",
+        "title": "Kitty",
+        "description": "En fase de implementación",
+        "type": "coming_soon"
+      },
+      {
+        "id": "terminal_windows",
+        "icon": "🪟",
+        "title": "Windows Terminal",
+        "description": "En fase de implementación",
+        "type": "coming_soon"
+      },
+      {
         "id": "terminal_list",
         "icon": "📋",
         "title": "Ver Terminales",

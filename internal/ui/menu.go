@@ -12,6 +12,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/XebecCorporation/XebecCorporation.Dots/internal/actions"
 	"github.com/XebecCorporation/XebecCorporation.Dots/internal/os"
 )
 
@@ -165,6 +166,10 @@ type MenuModel struct {
 	CachedTerminals []os.Terminal // Cache de terminales detectados
 	IsLoading       bool          // Estado de carga
 	LoadingMessage  string        // Mensaje de carga
+	// Checkbox mode
+	IsCheckboxMode  bool             // Si estamos en modo checkbox
+	CheckboxOptions []CheckboxOption // Opciones del checkbox
+	CheckboxTitle   string           // Título del checkbox
 }
 
 // NewMenuModel crea un nuevo modelo de menú
@@ -260,6 +265,11 @@ func (m MenuModel) Init() tea.Cmd {
 }
 
 func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Manejar modo checkbox
+	if m.IsCheckboxMode {
+		return m.updateCheckboxMode(msg)
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -274,14 +284,24 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case "down", "j":
-			if m.CurrentMenu == "terminal" {
+			// Verificar si hay opciones de branding
+			options := m.getCurrentOptions()
+			hasBrandingOptions := len(options) > 0 && options[0].ID == "terminal_alacritty"
+
+			if m.CurrentMenu == "terminal" && hasBrandingOptions {
+				// Usar opciones del branding
+				if m.Selected < len(options)-1 {
+					m.Selected++
+				}
+			} else if m.CurrentMenu == "terminal" {
+				// Usar tabla de terminales
 				terminals := m.CachedTerminals
 				maxOptions := len(terminals) + 2
 				if m.Selected < maxOptions-1 {
 					m.Selected++
 				}
 			} else {
-				if m.Selected < len(m.getCurrentOptions())-1 {
+				if m.Selected < len(options)-1 {
 					m.Selected++
 				}
 			}
@@ -346,75 +366,262 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// updateCheckboxMode maneja las actualizaciones en modo checkbox
+func (m MenuModel) updateCheckboxMode(msg tea.Msg) (MenuModel, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "up", "k":
+			if m.Selected > 0 {
+				m.Selected--
+			}
+		case "down", "j":
+			// Últimas 2 opciones son Confirmar y Cancelar
+			maxOptions := len(m.CheckboxOptions) + 2
+			if m.Selected < maxOptions-1 {
+				m.Selected++
+			}
+		case " ":
+			// Toggle checkbox (solo para opciones, no para confirmar/cancelar)
+			if m.Selected < len(m.CheckboxOptions) {
+				m.CheckboxOptions[m.Selected].Checked = !m.CheckboxOptions[m.Selected].Checked
+			}
+		case "enter":
+			// Si estamos en la última opción (Confirmar)
+			if m.Selected == len(m.CheckboxOptions) {
+				// Confirmar - aplicar configuración
+				m.applyAlacrittyConfig()
+				m.IsCheckboxMode = false
+				m.CheckboxOptions = nil
+				m.CheckboxTitle = ""
+				m.Selected = 0
+			} else if m.Selected == len(m.CheckboxOptions)+1 {
+				// Cancelar
+				m.IsCheckboxMode = false
+				m.CheckboxOptions = nil
+				m.CheckboxTitle = ""
+				m.Selected = 0
+			} else {
+				// Toggle checkbox
+				m.CheckboxOptions[m.Selected].Checked = !m.CheckboxOptions[m.Selected].Checked
+			}
+		case "q", "esc", "ctrl+c":
+			// Cancelar
+			m.IsCheckboxMode = false
+			m.CheckboxOptions = nil
+			m.CheckboxTitle = ""
+			m.Selected = 0
+		}
+
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width
+		m.Height = msg.Height
+	}
+
+	return m, nil
+}
+
+// applyAlacrittyConfig aplica la configuración de Alacritty
+func (m *MenuModel) applyAlacrittyConfig() {
+	// Construir opciones seleccionadas
+	opts := actions.AlacrittyConfigOptions{}
+	for _, opt := range m.CheckboxOptions {
+		if opt.Checked {
+			switch opt.ID {
+			case "window":
+				opts.Window = true
+			case "colors":
+				opts.Colors = true
+			case "font":
+				opts.Font = true
+			case "cursor":
+				opts.Cursor = true
+			case "shell":
+				opts.Shell = true
+			}
+		}
+	}
+
+	if !opts.Window && !opts.Colors && !opts.Font && !opts.Cursor && !opts.Shell {
+		fmt.Println(MutedTextStyle.Render("No se seleccionó ninguna opción"))
+		return
+	}
+
+	// Aplicar configuración
+	fmt.Println()
+	fmt.Println(InfoStyle.Render("Aplicando configuración..."))
+	fmt.Println()
+
+	if err := actions.ConfigureAlacritty(opts); err != nil {
+		fmt.Println(ErrorStyle.Render(fmt.Sprintf("✗ Error: %v", err)))
+		return
+	}
+
+	fmt.Println()
+	fmt.Println(SuccessStyle.Render("✅ Configuración aplicada correctamente"))
+	fmt.Println(MutedTextStyle.Render("Reinicia Alacritty para ver los cambios"))
+}
+
+// renderCheckboxView renderiza la vista de checkbox
+func (m MenuModel) renderCheckboxView() string {
+	var b strings.Builder
+
+	width := m.Width
+	if width == 0 {
+		width = 80
+	}
+
+	contentWidth := width - 4
+	if contentWidth < 60 {
+		contentWidth = 60
+	}
+
+	// Título
+	b.WriteString(TitleStyle.Width(contentWidth).Align(lipgloss.Center).Render(m.CheckboxTitle))
+	b.WriteString("\n\n")
+
+	// Opciones
+	checkboxUncheckedStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(BrandingConfig.Colors.GrayLight))
+
+	checkboxCheckedStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(BrandingConfig.Colors.AccentGreen))
+
+	selectedStyle := lipgloss.NewStyle().
+		Background(lipgloss.Color(BrandingConfig.Colors.Primary)).
+		Foreground(lipgloss.Color(BrandingConfig.Colors.White))
+
+	for i, opt := range m.CheckboxOptions {
+		// Determinar el estilo del checkbox
+		var checkbox string
+		var style lipgloss.Style
+
+		if opt.Checked {
+			checkbox = "[✓]"
+			style = checkboxCheckedStyle
+		} else {
+			checkbox = "[ ]"
+			style = checkboxUncheckedStyle
+		}
+
+		// Si está seleccionado, usar estilo destacado
+		if i == m.Selected {
+			b.WriteString("► ")
+			b.WriteString(selectedStyle.Render(fmt.Sprintf("%s %s", checkbox, opt.Title)))
+		} else {
+			b.WriteString("  ")
+			b.WriteString(style.Render(fmt.Sprintf("%s %s", checkbox, opt.Title)))
+		}
+		b.WriteString("\n")
+		b.WriteString(MutedTextStyle.Render(fmt.Sprintf("     %s", opt.Description)))
+		b.WriteString("\n\n")
+	}
+
+	// Botones de confirmar y cancelar
+	b.WriteString(MutedTextStyle.Render("─────────────────────────────"))
+	b.WriteString("\n\n")
+
+	// Opción confirmar
+	if m.Selected == len(m.CheckboxOptions) {
+		b.WriteString(selectedStyle.Render("► Configurar"))
+	} else {
+		b.WriteString("  Configurar")
+	}
+	b.WriteString("  ")
+
+	// Opción cancelar
+	if m.Selected == len(m.CheckboxOptions)+1 {
+		b.WriteString(selectedStyle.Render("► Cancelar"))
+	} else {
+		b.WriteString(MutedTextStyle.Render("Cancelar"))
+	}
+	b.WriteString("\n\n")
+
+	// Footer
+	b.WriteString(MutedTextStyle.Render("Espacio/Enter: marcar │ ↑↓: navegar │ q: salir"))
+
+	return b.String()
+}
+
 // Manejar Enter - navegar o ejecutar
 func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
-	// Si estamos en el menú de terminal
-	if m.CurrentMenu == "terminal" {
-		terminals := m.CachedTerminals
-		terminalCount := len(terminals)
+	// Si estamos en el menú "terminal" Y hay terminales detectados, mostrar la tabla
+	if m.CurrentMenu == "terminal" && len(m.CachedTerminals) > 0 {
+		// Verificar si estamos en la sección de tabla de terminales o en el submenú
+		options := m.getCurrentOptions()
 
-		// Si Selected es un índice de terminal (0 a terminalCount-1)
-		if m.Selected < terminalCount {
-			// Entrar al submenú de ese terminal
-			t := terminals[m.Selected]
-			submenuID := "terminal_" + t.ID
+		// Si la primera opción es "terminal_alacritty", usamos el nuevo flujo
+		// Si la primera opción es un terminal detectado, usamos el flujo viejo
+		if len(options) > 0 && options[0].ID == "terminal_alacritty" {
+			// Nuevo flujo: usar lógica de submenú normal
+		} else {
+			// Flujo viejo: tabla de terminales
+			terminals := m.CachedTerminals
+			terminalCount := len(terminals)
 
-			// Crear opciones del submenú para este terminal
-			submenuOpts := []MenuOption{
-				{
-					ID:          submenuID + "_config",
-					Icon:        "⚙️",
-					Title:       "Configurar",
-					Description: "Aplicar configuración de XEBEC",
-				},
-				{
-					ID:          submenuID + "_install",
-					Icon:        "📥",
-					Title:       "Instalar",
-					Description: "Instalar " + t.Name,
-				},
-				{
-					ID:          "back",
-					Icon:        "←",
-					Title:       "Volver",
-					Description: "Volver a la lista de terminales",
-					IsBack:      true,
-				},
-			}
+			// Si Selected es un índice de terminal (0 a terminalCount-1)
+			if m.Selected < terminalCount {
+				// Entrar al submenú de ese terminal
+				t := terminals[m.Selected]
+				submenuID := "terminal_" + t.ID
 
-			m.History = append(m.History, MenuLevel{
-				ID:      submenuID,
-				Title:   t.Name,
-				Options: submenuOpts,
-			})
-			m.CurrentMenu = submenuID
-			m.Selected = 0
-			return *m, nil
-		}
+				// Crear opciones del submenú para este terminal
+				submenuOpts := []MenuOption{
+					{
+						ID:          submenuID + "_config",
+						Icon:        "⚙️",
+						Title:       "Configurar",
+						Description: "Aplicar configuración de XEBEC",
+					},
+					{
+						ID:          submenuID + "_install",
+						Icon:        "📥",
+						Title:       "Instalar",
+						Description: "Instalar " + t.Name,
+					},
+					{
+						ID:          "back",
+						Icon:        "←",
+						Title:       "Volver",
+						Description: "Volver a la lista de terminales",
+						IsBack:      true,
+					},
+				}
 
-		// Selected == terminalCount → Actualizar
-		if m.Selected == terminalCount {
-			// Iniciar ciclo de loading
-			m.IsLoading = true
-			m.LoadingMessage = "Actualizando terminales..."
-
-			// Retornar comando para ejecutar la actualización
-			return *m, func() tea.Msg {
-				// Pequeña pausa para mostrar el loading
-				// Luego actualizar
-				terminals := os.DetectTerminals()
-				return RefreshTerminalsWithDataMsg{Terminals: terminals}
-			}
-		}
-
-		// Selected == terminalCount + 1 → Volver
-		if m.Selected == terminalCount+1 {
-			if len(m.History) > 1 {
-				m.History = m.History[:len(m.History)-1]
-				m.CurrentMenu = m.History[len(m.History)-1].ID
+				m.History = append(m.History, MenuLevel{
+					ID:      submenuID,
+					Title:   t.Name,
+					Options: submenuOpts,
+				})
+				m.CurrentMenu = submenuID
 				m.Selected = 0
+				return *m, nil
 			}
-			return *m, nil
+
+			// Selected == terminalCount → Actualizar
+			if m.Selected == terminalCount {
+				// Iniciar ciclo de loading
+				m.IsLoading = true
+				m.LoadingMessage = "Actualizando terminales..."
+
+				// Retornar comando para ejecutar la actualización
+				return *m, func() tea.Msg {
+					// Pequeña pausa para mostrar el loading
+					// Luego actualizar
+					terminals := os.DetectTerminals()
+					return RefreshTerminalsWithDataMsg{Terminals: terminals}
+				}
+			}
+
+			// Selected == terminalCount + 1 → Volver
+			if m.Selected == terminalCount+1 {
+				if len(m.History) > 1 {
+					m.History = m.History[:len(m.History)-1]
+					m.CurrentMenu = m.History[len(m.History)-1].ID
+					m.Selected = 0
+				}
+				return *m, nil
+			}
 		}
 	}
 
@@ -453,6 +660,47 @@ func (m *MenuModel) handleEnter() (MenuModel, tea.Cmd) {
 		return *m, nil
 	}
 
+	// Manejo especial para terminal_alacritty - activar modo checkbox
+	if option.ID == "terminal_alacritty" {
+		// Verificar si Alacritty está instalado
+		installed, configured, configPath := actions.GetAlacrittyStatus()
+
+		if !installed {
+			fmt.Println(ErrorStyle.Render("✗ Alacritty no está instalado"))
+			fmt.Println(MutedTextStyle.Render("Por favor, instala Alacritty primero."))
+			fmt.Println(MutedTextStyle.Render("En Windows: winget install Alacritty.Alacritty"))
+			return *m, nil
+		}
+
+		// Mostrar estado
+		fmt.Println()
+		if configured {
+			fmt.Printf("  ✓ Configuración existente: %s\n", configPath)
+		} else {
+			fmt.Println("  ⚠ No hay configuración")
+		}
+		fmt.Println()
+
+		// Activar modo checkbox
+		options := actions.GetAlacrittyConfigOptions()
+		m.IsCheckboxMode = true
+		m.CheckboxTitle = "🖥️ Opciones de Configuración - Alacritty"
+
+		// Convertir a CheckboxOption
+		m.CheckboxOptions = make([]CheckboxOption, len(options))
+		for i, opt := range options {
+			m.CheckboxOptions[i] = CheckboxOption{
+				ID:          opt.ID,
+				Title:       opt.Title,
+				Description: opt.Description,
+				Checked:     false, // Por defecto desmarcado
+			}
+		}
+		m.Selected = 0
+
+		return *m, nil
+	}
+
 	// Ejecutar acción
 	return *m, func() tea.Msg {
 		executeMenuAction(option.ID)
@@ -470,11 +718,83 @@ func (m *MenuModel) handleGoBack() (MenuModel, tea.Cmd) {
 	return *m, nil
 }
 
+// renderTerminalConfigMenu renderiza el menú de configuración de terminal
+func (m MenuModel) renderTerminalConfigMenu(content string, contentWidth int, titleStyle, borderStyle, separatorStyle lipgloss.Style) string {
+	options := m.getCurrentOptions()
+	currentLevel := m.History[len(m.History)-1]
+
+	// Estilos
+	optionStyle := lipgloss.NewStyle().
+		Width(contentWidth)
+
+	selectedStyle := lipgloss.NewStyle().
+		Background(lipgloss.Color(BrandingConfig.Colors.Primary)).
+		Foreground(lipgloss.Color(BrandingConfig.Colors.White)).
+		Width(contentWidth)
+
+	iconStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(BrandingConfig.Colors.AccentCyan))
+
+	// Título
+	content += titleStyle.Render(currentLevel.Title)
+	content += "\n\n"
+
+	// Opciones
+	for i, opt := range options {
+		prefix := "  "
+		style := optionStyle
+
+		if i == m.Selected {
+			prefix = "► "
+			style = selectedStyle
+		}
+
+		// Renderizar opción
+		icon := opt.Icon
+		if icon == "" {
+			icon = "•"
+		}
+
+		iconPrefix := iconStyle.Render(icon + " ")
+
+		if i == m.Selected {
+			content += style.Render(prefix + iconPrefix + opt.Title)
+		} else {
+			content += optionStyle.Render(prefix + iconPrefix + opt.Title)
+		}
+		content += "\n"
+
+		// Descripción
+		if opt.Description != "" {
+			descStyle := MutedTextStyle
+			if i == m.Selected {
+				descStyle = lipgloss.NewStyle().
+					Foreground(lipgloss.Color(BrandingConfig.Colors.White)).
+					Background(lipgloss.Color(BrandingConfig.Colors.GrayDark)).
+					Width(contentWidth)
+			}
+			content += descStyle.Render("    " + opt.Description)
+			content += "\n"
+		}
+		content += "\n"
+	}
+
+	// Footer
+	content += separatorStyle.Render(GetFooterText(true))
+
+	return borderStyle.Width(contentWidth).Render(content)
+}
+
 // ============================================
 // View - Renderizado del menú
 // ============================================
 
 func (m MenuModel) View() string {
+	// Renderizar modo checkbox si está activo
+	if m.IsCheckboxMode {
+		return m.renderCheckboxView()
+	}
+
 	width := m.Width
 	if width == 0 {
 		width = 80
@@ -553,8 +873,20 @@ func (m MenuModel) View() string {
 		content += "\n"
 	}
 
-	// Si es el menú de terminal, mostrar tabla directamente
+	// Si es el menú de terminal, verificar qué mostrar
 	if m.CurrentMenu == "terminal" {
+		// Verificar si hay opciones de branding
+		options := m.getCurrentOptions()
+		hasBrandingOptions := len(options) > 0 && options[0].ID == "terminal_alacritty"
+
+		// Si hay opciones de branding y tenemos cache de terminales, mostrar ambas
+		// Primero las opciones de configuración, luego la tabla de terminales
+		if hasBrandingOptions {
+			// Mostrar las opciones de configuración del branding
+			return m.renderTerminalConfigMenu(content, contentWidth, titleStyle, borderStyle, separatorStyle)
+		}
+
+		// Si no hay opciones de branding, mostrar la tabla de terminales
 		terminals := m.CachedTerminals
 
 		// Estilo de tabla tipo Nushell
@@ -774,14 +1106,16 @@ func executeMenuAction(optionID string) {
 		fmt.Println(SuccessStyle.Render("🔄 Detectando terminales..."))
 		showTerminalsTable()
 	case "terminal_alacritty":
-		fmt.Println(SuccessStyle.Render("⚡ Configurando Alacritty..."))
-		configureAlacritty()
+		configureAlacrittyWithOptions()
 	case "terminal_wezterm":
-		fmt.Println(SuccessStyle.Render("🔥 Configurando WezTerm..."))
+		fmt.Println(WarningStyle.Render("🔥 WezTerm - En fase de implementación"))
+		fmt.Println(MutedTextStyle.Render("Pronto podrás configurar WezTerm desde XEBEC"))
 	case "terminal_kitty":
-		fmt.Println(SuccessStyle.Render("🐱 Configurando Kitty..."))
+		fmt.Println(WarningStyle.Render("🐱 Kitty - En fase de implementación"))
+		fmt.Println(MutedTextStyle.Render("Pronto podrás configurar Kitty desde XEBEC"))
 	case "terminal_windows":
-		fmt.Println(SuccessStyle.Render("🪟 Configurando Windows Terminal..."))
+		fmt.Println(WarningStyle.Render("🪟 Windows Terminal - En fase de implementación"))
+		fmt.Println(MutedTextStyle.Render("Pronto podrás configurar Windows Terminal desde XEBEC"))
 	case "shell_nushell":
 		fmt.Println(SuccessStyle.Render("🐚 Configurando Nushell..."))
 	case "shell_starship":
@@ -1014,6 +1348,83 @@ func configureAlacritty() {
 	}
 	fmt.Println(ErrorStyle.Render("✗ Alacritty no está instalado"))
 	fmt.Println(MutedTextStyle.Render("Usa 'xebec install tools' para instalar herramientas"))
+}
+
+// configureAlacrittyWithOptions configura Alacritty con opciones de checkbox
+func configureAlacrittyWithOptions() {
+	fmt.Println()
+	fmt.Println(TitleStyle.Render("🖥️ Configurar Alacritty"))
+	fmt.Println()
+
+	// Verificar si Alacritty está instalado
+	installed, configured, configPath := actions.GetAlacrittyStatus()
+
+	if !installed {
+		fmt.Println(ErrorStyle.Render("✗ Alacritty no está instalado"))
+		fmt.Println(MutedTextStyle.Render("Por favor, instala Alacritty primero."))
+		fmt.Println(MutedTextStyle.Render("En Windows: winget install Alacritty.Alacritty"))
+		return
+	}
+
+	// Mostrar estado actual
+	fmt.Println(InfoStyle.Render("Estado de Alacritty:"))
+	if configured {
+		fmt.Printf("  ✓ Configuración existente: %s\n", configPath)
+	} else {
+		fmt.Println("  ⚠ No hay configuración")
+	}
+	fmt.Println()
+
+	// Obtener opciones de configuración
+	options := actions.GetAlacrittyConfigOptions()
+
+	// Ejecutar checkbox
+	fmt.Println(MutedTextStyle.Render("Selecciona las opciones a configurar:"))
+	fmt.Println(MutedTextStyle.Render("(Usa ↑↓ para navegar, Espacio para marcar)"))
+	fmt.Println()
+
+	selected := RunCheckboxModel("🖥️ Opciones de Configuración - Alacritty", options)
+
+	if selected == nil {
+		fmt.Println(MutedTextStyle.Render("Configuración cancelada"))
+		return
+	}
+
+	// Construir opciones seleccionadas
+	opts := actions.AlacrittyConfigOptions{}
+	for _, s := range selected {
+		switch s.ID {
+		case "window":
+			opts.Window = true
+		case "colors":
+			opts.Colors = true
+		case "font":
+			opts.Font = true
+		case "cursor":
+			opts.Cursor = true
+		case "shell":
+			opts.Shell = true
+		}
+	}
+
+	if !opts.Window && !opts.Colors && !opts.Font && !opts.Cursor && !opts.Shell {
+		fmt.Println(MutedTextStyle.Render("No se seleccionó ninguna opción"))
+		return
+	}
+
+	// Aplicar configuración
+	fmt.Println()
+	fmt.Println(InfoStyle.Render("Aplicando configuración..."))
+	fmt.Println()
+
+	if err := actions.ConfigureAlacritty(opts); err != nil {
+		fmt.Println(ErrorStyle.Render(fmt.Sprintf("✗ Error: %v", err)))
+		return
+	}
+
+	fmt.Println()
+	fmt.Println(SuccessStyle.Render("✅ Configuración aplicada correctamente"))
+	fmt.Println(MutedTextStyle.Render("Reinicia Alacritty para ver los cambios"))
 }
 
 // showTerminalSelection - legacy
